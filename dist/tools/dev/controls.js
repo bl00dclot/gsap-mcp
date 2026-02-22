@@ -1,0 +1,144 @@
+import { z } from "zod";
+// ── Core generation logic ──────────────────────────────────
+export function generateControlsCode(params) {
+    const warnings = [];
+    const varName = resolveVarName(params);
+    const actionCode = generateAction(params, varName, warnings);
+    let code = actionCode;
+    if (params.generateUI) {
+        code += "\n\n" + generateUIPanel(varName);
+    }
+    return { code, warnings };
+}
+// ── Variable name resolution ───────────────────────────────
+function resolveVarName(params) {
+    if (params.selector)
+        return params.selector;
+    switch (params.target) {
+        case "timeline":
+            return "tl";
+        case "tween":
+            return "tween";
+        case "global":
+            return "gsap.globalTimeline";
+    }
+}
+// ── Action code generation ─────────────────────────────────
+function generateAction(params, varName, warnings) {
+    switch (params.action) {
+        case "play":
+            return `${varName}.play();`;
+        case "pause":
+            return `${varName}.pause();`;
+        case "resume":
+            return `${varName}.resume();`;
+        case "reverse":
+            return `${varName}.reverse();`;
+        case "restart":
+            return `${varName}.restart();`;
+        case "seek":
+            return generateSeek(params, varName, warnings);
+        case "timeScale":
+            return generateTimeScale(params, varName, warnings);
+        case "kill":
+            return generateKill(params, varName, warnings);
+        case "progress":
+            return generateProgress(params, varName, warnings);
+    }
+}
+function generateSeek(params, varName, warnings) {
+    if (params.value === undefined) {
+        warnings.push("seek requires a value (number in seconds or string label). Defaulting to 0.");
+        return `${varName}.seek(0);`;
+    }
+    const formatted = typeof params.value === "string" ? `"${params.value}"` : params.value;
+    return `${varName}.seek(${formatted});`;
+}
+function generateTimeScale(params, varName, warnings) {
+    if (params.value === undefined) {
+        warnings.push("timeScale requires a numeric value (multiplier). Defaulting to 1.");
+        return `${varName}.timeScale(1);`;
+    }
+    return `${varName}.timeScale(${params.value});`;
+}
+function generateProgress(params, varName, warnings) {
+    if (params.value === undefined) {
+        warnings.push("progress requires a numeric value (0–1). Defaulting to 0.");
+        return `${varName}.progress(0);`;
+    }
+    return `${varName}.progress(${params.value});`;
+}
+function generateKill(params, varName, warnings) {
+    if (params.target === "global" && params.selector) {
+        return `gsap.killTweensOf("${params.selector}");`;
+    }
+    return `${varName}.kill();`;
+}
+// ── UI panel generation ────────────────────────────────────
+function generateUIPanel(varName) {
+    const lines = [
+        `<!-- GSAP Control Panel -->`,
+        `<div id="gsap-controls" style="position: fixed; bottom: 0; left: 0; right: 0; z-index: 9999; background: #1a1a2e; padding: 8px 16px; display: flex; gap: 8px; align-items: center; font-family: monospace;">`,
+        `  <button onclick="${varName}.play()" style="padding: 4px 12px; cursor: pointer;">Play</button>`,
+        `  <button onclick="${varName}.pause()" style="padding: 4px 12px; cursor: pointer;">Pause</button>`,
+        `  <button onclick="${varName}.reverse()" style="padding: 4px 12px; cursor: pointer;">Reverse</button>`,
+        `  <button onclick="${varName}.restart()" style="padding: 4px 12px; cursor: pointer;">Restart</button>`,
+        `  <button onclick="${varName}.timeScale(0.5)" style="padding: 4px 12px; cursor: pointer;">0.5x</button>`,
+        `  <button onclick="${varName}.timeScale(1)" style="padding: 4px 12px; cursor: pointer;">1x</button>`,
+        `  <button onclick="${varName}.timeScale(2)" style="padding: 4px 12px; cursor: pointer;">2x</button>`,
+        `</div>`,
+    ];
+    return lines.join("\n");
+}
+// ── MCP tool registration ──────────────────────────────────
+export function registerControlsTool(server) {
+    server.registerTool("gsap_controls", {
+        title: "GSAP Animation Controls",
+        description: "Generate play/pause/reverse/seek control code for GSAP animations",
+        inputSchema: {
+            action: z
+                .enum([
+                "play",
+                "pause",
+                "resume",
+                "reverse",
+                "restart",
+                "seek",
+                "timeScale",
+                "kill",
+                "progress",
+            ])
+                .describe("The control action to generate"),
+            target: z
+                .enum(["tween", "timeline", "global"])
+                .optional()
+                .default("timeline")
+                .describe("Target type: tween, timeline, or global"),
+            selector: z
+                .string()
+                .optional()
+                .describe('Variable name (default "tl" for timeline, "tween" for tween, "gsap.globalTimeline" for global)'),
+            value: z
+                .union([z.number(), z.string()])
+                .optional()
+                .describe("Value for seek (seconds or label), timeScale (multiplier), or progress (0–1)"),
+            generateUI: z
+                .boolean()
+                .optional()
+                .default(false)
+                .describe("Generate an HTML control panel"),
+        },
+    }, async (args) => {
+        const result = generateControlsCode(args);
+        const content = [
+            { type: "text", text: result.code },
+        ];
+        if (result.warnings.length > 0) {
+            content.push({
+                type: "text",
+                text: `\n--- Warnings ---\n${result.warnings.join("\n")}`,
+            });
+        }
+        return { content };
+    });
+}
