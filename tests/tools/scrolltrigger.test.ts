@@ -64,6 +64,20 @@ describe("standalone mode", () => {
     expect(code).toContain("yPercent: -50");
   });
 
+  it("includes duration in standalone non-fromTo mode", () => {
+    const { code } = generateScrollTriggerCode(
+      defaults({
+        animation: {
+          target: ".element",
+          method: "to",
+          properties: { opacity: 0 },
+          duration: 1,
+        },
+      })
+    );
+    expect(code).toContain("duration: 1");
+  });
+
   it("with scrub boolean", () => {
     const { code } = generateScrollTriggerCode(
       defaults({

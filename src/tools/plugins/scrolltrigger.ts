@@ -152,6 +152,7 @@ function generateStandalone(
     );
   } else {
     const allVars = formatGsapVars({
+      duration: animation.duration,
       ...animation.properties,
       ease: animation.ease ?? "none",
       scrollTrigger: scrollTriggerConfig,
