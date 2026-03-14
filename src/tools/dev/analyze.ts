@@ -283,7 +283,7 @@ export function registerAnalyzeTool(server: McpServer): void {
     {
       title: "GSAP Code Analyzer",
       description:
-        "Analyze GSAP animation code for performance issues, best practices, and optimization opportunities",
+        "Audit existing GSAP animation code for performance, optimization, and accessibility issues. Use when you want to check code before delivering it — detects layout-triggering properties, GSAP v2 syntax, missing registerPlugin(), stagger risks, and missing prefers-reduced-motion handling. Returns scored issues with severity and fix suggestions. For generating new animation code use gsap_tween or gsap_timeline instead.",
       inputSchema: {
         code: z.string().describe("The GSAP code to analyze"),
         checkPerformance: z.boolean().optional().default(true),

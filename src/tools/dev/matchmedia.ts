@@ -131,7 +131,7 @@ export function registerMatchMediaTool(server: McpServer): void {
     {
       title: "GSAP MatchMedia",
       description:
-        "Create responsive animations that adapt to screen sizes using gsap.matchMedia()",
+        "Generate gsap.matchMedia() code that runs different animations per breakpoint or media query. Use when animations need to change based on screen size or prefers-reduced-motion. Each breakpoint specifies a CSS media query string (e.g. '(max-width: 768px)') and its own animations — GSAP auto-reverts them when the breakpoint stops matching. For a single animation without breakpoints use gsap_tween instead.",
       inputSchema: {
         breakpoints: z
           .array(breakpointSchema)

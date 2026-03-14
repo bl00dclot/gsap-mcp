@@ -192,7 +192,7 @@ export function registerControlsTool(server: McpServer): void {
     {
       title: "GSAP Animation Controls",
       description:
-        "Generate play/pause/reverse/seek control code for GSAP animations",
+        "Generate playback control code for an existing tween or timeline variable (play, pause, reverse, seek, timeScale, kill, progress). Use when you need runtime control over an animation you have already created. Provide the JS variable name (e.g. tl, heroAnimation) in variableName — NOT a CSS selector. For generating the animation itself use gsap_tween or gsap_timeline instead.",
       inputSchema: {
         action: z
           .enum([

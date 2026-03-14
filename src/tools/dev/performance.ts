@@ -199,7 +199,7 @@ export function registerPerformanceTool(server: McpServer): void {
     {
       title: "GSAP Performance Profiler",
       description:
-        "Generate performance monitoring and optimization code for GSAP animations",
+        "Generate performance measurement and optimization code for GSAP animations. Three modes: monitor (FPS counter, memory logger, or reflow detector — provide options.metrics), optimize (analyze existing code and annotate performance issues inline — requires code param), profile (measure animation creation time and per-frame render timings). Use monitor and profile during development only.",
       inputSchema: {
         action: z
           .enum(["monitor", "optimize", "profile"])

@@ -167,7 +167,7 @@ export function registerDebugTool(server: McpServer): void {
     {
       title: "GSAP Debug Helper",
       description:
-        "Generate debug utilities for GSAP animations: timeline visualization, GSDevTools, logging, slow-motion",
+        "Generate debugging utilities for GSAP animations during development. Modes: visualize (ScrollTrigger markers + timeline info log), gsdevtools (GSDevTools panel — requires Club GSAP membership), log (onUpdate progress/time logging), slowmo (slow down all animations via globalTimeline.timeScale), labelDump (print all timeline labels). Use only during development — remove all debug code before production.",
       inputSchema: {
         action: z
           .enum(["visualize", "gsdevtools", "log", "slowmo", "labelDump"])

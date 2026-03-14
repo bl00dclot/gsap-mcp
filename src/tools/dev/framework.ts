@@ -535,7 +535,7 @@ export function registerFrameworkTool(server: McpServer): void {
     {
       title: "GSAP Framework Integration",
       description:
-        "Generate framework-specific GSAP code for React, Vue, Angular, or Svelte",
+        "Generate framework-specific GSAP integration boilerplate with proper animation cleanup. Frameworks: react (hook or component — uses useLayoutEffect + gsap.context for scoped cleanup), vue (composable or component — uses onMounted/onUnmounted + gsap.context), angular (directive or component — uses ngAfterViewInit/ngOnDestroy), svelte (action or component — uses onMount/onDestroy). Always includes cleanup to prevent memory leaks on component unmount.",
       inputSchema: {
         framework: z
           .enum(["react", "vue", "angular", "svelte"])

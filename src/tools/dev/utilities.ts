@@ -599,7 +599,7 @@ export function registerUtilitiesTool(server: McpServer): void {
     {
       title: "GSAP Utilities",
       description:
-        "Generate code using GSAP utility methods: interpolate, mapRange, clamp, wrap, distribute, etc.",
+        "Generate code using GSAP utility functions for math, range mapping, and DOM helpers. Use for value interpolation, clamping, wrapping, snapping, and scoped DOM selection within animation logic. Not for generating animations — use gsap_tween or gsap_timeline for that.",
       inputSchema: {
         method: z
           .enum([
@@ -621,7 +621,23 @@ export function registerUtilitiesTool(server: McpServer): void {
           .describe("The GSAP utility method to generate"),
         params: z
           .record(z.string(), z.any())
-          .describe("Method-specific parameters"),
+          .describe(
+            "Method-specific parameters (keys vary by method): " +
+            "interpolate → {start, end, progress}; " +
+            "mapRange → {inMin, inMax, outMin, outMax, value}; " +
+            "clamp → {min, max, value}; " +
+            "wrap → {min, max, value} or {array, index}; " +
+            "wrapYoyo → {min, max, value}; " +
+            "distribute → {amount, base?, from?, ease?}; " +
+            "random → {min, max, snap?}; " +
+            "snap → {snap, value} or {array, value}; " +
+            "normalize → {min, max, value}; " +
+            "pipe → {functions: string[]}; " +
+            "unitize → {func, unit}; " +
+            "toArray → {selector}; " +
+            "selector → {scope}; " +
+            "shuffle → {array}"
+          ),
         example: z
           .boolean()
           .optional()
