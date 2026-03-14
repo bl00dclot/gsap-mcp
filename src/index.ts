@@ -24,6 +24,41 @@ import { registerFrameworkTool } from "./tools/dev/framework.js";
 const server = new McpServer({
   name: "gsap-mcp",
   version: "1.0.0",
+  instructions: `GSAP MCP — Pure Code Generation Server (GSAP v3.12+)
+
+This server generates static GSAP animation code. It has no runtime —
+it outputs JavaScript/TypeScript code strings that the developer pastes
+into their project.
+
+RULES:
+- NEVER generate GSAP v2 syntax (TweenMax, TimelineMax, TweenLite, CSSPlugin wrapping)
+- ALWAYS use named exports for plugins: import { ScrollTrigger } from "gsap/ScrollTrigger"
+- ALWAYS include gsap.registerPlugin() after plugin imports
+- Duration goes in the TO vars for fromTo(), never in the FROM vars
+- Use autoAlpha instead of opacity when elements should become non-interactive when hidden
+- Prefer gsap.context() for any framework component code — it handles cleanup
+
+TOOL SELECTION GUIDE:
+- Simple single animation → gsap_tween
+- Common pattern (fadeIn, slideUp, etc.) → gsap_preset
+- Multi-step sequenced animation → gsap_timeline
+- Scroll-linked animation → gsap_scrolltrigger
+- Text character/word animation → gsap_splittext
+- Layout state transition → gsap_flip
+- Cursor follower / high-frequency update → gsap_quickto
+- Cleanup wrapper for frameworks → gsap_context
+- Reusable custom effect → gsap_effect
+- React/Vue/Svelte/Angular integration → gsap_framework_integration
+- Text content swap / typewriter effect → gsap_textplugin
+- Analyze existing GSAP code → gsap_analyze
+- SVG shape morphing → gsap_morphsvg
+- SVG stroke drawing → gsap_drawsvg
+- Animate along a path → gsap_motionpath
+- Playback controls (play/pause/seek) → gsap_controls
+- GSAP utility methods (clamp, wrap, snap, etc.) → gsap_utilities
+- Responsive breakpoint animations → gsap_matchmedia
+- Debug / inspect animations → gsap_debug
+- Performance monitoring → gsap_performance`,
 });
 
 registerTweenTool(server);
