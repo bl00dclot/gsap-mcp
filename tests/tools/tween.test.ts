@@ -184,7 +184,7 @@ describe("onComplete", () => {
     const { code } = generateTweenCode(
       defaults({ onComplete: "handleDone" })
     );
-    expect(code).toContain('onComplete: "handleDone"');
+    expect(code).toContain("onComplete: handleDone");
   });
 });
 
@@ -203,7 +203,7 @@ describe("combined options", () => {
     expect(code).toContain("delay: 0.2");
     expect(code).toContain("repeat: 2");
     expect(code).toContain("yoyo: true");
-    expect(code).toContain('onComplete: "done"');
+    expect(code).toContain("onComplete: done");
   });
 });
 

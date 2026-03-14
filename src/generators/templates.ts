@@ -14,10 +14,21 @@ const PLUGIN_CDN_PATHS: Record<string, string> = {
   PixiPlugin: "PixiPlugin.min.js",
 };
 
-function formatValue(value: unknown, depth: number): string {
+const CALLBACK_KEYS = new Set([
+  "onComplete",
+  "onStart",
+  "onUpdate",
+  "onRepeat",
+  "onReverseComplete",
+]);
+
+function formatValue(value: unknown, depth: number, key?: string): string {
   if (value === null) return "null";
   if (value === undefined) return "undefined";
-  if (typeof value === "string") return `"${value}"`;
+  if (typeof value === "string") {
+    if (key !== undefined && CALLBACK_KEYS.has(key)) return value;
+    return `"${value}"`;
+  }
   if (typeof value === "number" || typeof value === "boolean") return String(value);
 
   if (Array.isArray(value)) {
@@ -38,11 +49,11 @@ function formatValue(value: unknown, depth: number): string {
     const pad = INDENT.repeat(depth + 1);
     const closePad = INDENT.repeat(depth);
     const formatted = entries.map(
-      ([k, v]) => `${pad}${k}: ${formatValue(v, depth + 1)}`
+      ([k, v]) => `${pad}${k}: ${formatValue(v, depth + 1, k)}`
     );
 
     // Keep short objects inline
-    const inline = `{ ${entries.map(([k, v]) => `${k}: ${formatValue(v, depth + 1)}`).join(", ")} }`;
+    const inline = `{ ${entries.map(([k, v]) => `${k}: ${formatValue(v, depth + 1, k)}`).join(", ")} }`;
     if (inline.length <= 60 && entries.length <= 3) return inline;
 
     return `{\n${formatted.join(",\n")}\n${closePad}}`;

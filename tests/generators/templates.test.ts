@@ -76,6 +76,30 @@ describe("formatGsapVars", () => {
     expect(result).toContain("duration: 0.5");
   });
 
+  it("emits callback values as raw JS expressions (unquoted)", () => {
+    expect(formatGsapVars({ onComplete: "handleDone" })).toBe(
+      "{ onComplete: handleDone }"
+    );
+    expect(formatGsapVars({ onStart: "() => init()" })).toBe(
+      "{ onStart: () => init() }"
+    );
+    expect(formatGsapVars({ onUpdate: "updateFn" })).toBe(
+      "{ onUpdate: updateFn }"
+    );
+    expect(formatGsapVars({ onRepeat: "repeatFn" })).toBe(
+      "{ onRepeat: repeatFn }"
+    );
+    expect(formatGsapVars({ onReverseComplete: "reverseFn" })).toBe(
+      "{ onReverseComplete: reverseFn }"
+    );
+  });
+
+  it("still quotes non-callback string values", () => {
+    expect(formatGsapVars({ ease: "power2.out" })).toBe(
+      '{ ease: "power2.out" }'
+    );
+  });
+
   it("handles a large object with multi-line output", () => {
     const result = formatGsapVars({
       x: 100,
