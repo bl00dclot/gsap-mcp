@@ -159,7 +159,7 @@ export function registerMorphSVGTool(server: McpServer): void {
     {
       title: "GSAP MorphSVG",
       description:
-        "Morph between SVG shapes and paths with smooth transitions",
+        "Morph one SVG path into another using MorphSVGPlugin.\nTarget and endShape must be SVG path elements or path data strings.\nFor drawing SVG strokes use gsap_drawsvg instead.",
       inputSchema: {
         target: z
           .string()

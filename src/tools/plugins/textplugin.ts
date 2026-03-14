@@ -183,7 +183,7 @@ export function registerTextPluginTool(server: McpServer): void {
     {
       title: "GSAP TextPlugin",
       description:
-        "Animate text content changes with typing and scramble effects",
+        "Animate text content replacement character-by-character using TextPlugin\nor ScrambleTextPlugin. Use type 'replace' for typewriter effect, 'scramble'\nfor randomized scramble reveal. For animating split characters use\ngsap_splittext instead.",
       inputSchema: {
         target: z.string().describe("CSS selector for the text element"),
         text: z.string().describe("The target text content"),

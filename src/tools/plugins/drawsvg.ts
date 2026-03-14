@@ -134,7 +134,7 @@ export function registerDrawSVGTool(server: McpServer): void {
     {
       title: "GSAP DrawSVG",
       description:
-        "Animate SVG stroke drawing and line art progressively",
+        "Animate SVG stroke drawing progress using DrawSVGPlugin.\nUse for line-drawing and reveal effects on SVG paths.\nFor morphing between shapes use gsap_morphsvg instead.",
       inputSchema: {
         target: z
           .string()

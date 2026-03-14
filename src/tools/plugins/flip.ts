@@ -192,10 +192,16 @@ export function registerFlipTool(server: McpServer): void {
     {
       title: "GSAP Flip",
       description:
-        "Create smooth state-based layout animations. Capture state, make DOM changes, animate the transition.",
+        "Animate smooth layout transitions using GSAP Flip (capture-change-animate).\nUse for reordering, reparenting, or class-toggle DOM changes.\nFor regular positional animations use gsap_tween instead.",
       inputSchema: {
         targets: z.string().describe("CSS selector"),
-        action: z.enum(["full", "state", "from", "fit", "getState"]),
+        action: z
+          .enum(["full", "state", "from", "fit", "getState"])
+          .optional()
+          .default("full")
+          .describe(
+            'Flip workflow action — "full" generates complete capture-change-animate flow,\n"state"/"getState" captures current state, "from" animates from captured state,\n"fit" scales/positions element to match another'
+          ),
         options: optionsSchema,
         stateChange: z
           .string()

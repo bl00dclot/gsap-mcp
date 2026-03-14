@@ -122,7 +122,7 @@ export function registerMotionPathTool(server: McpServer): void {
     {
       title: "GSAP MotionPath",
       description:
-        "Animate elements along SVG paths or custom point arrays",
+        "Animate an element along an SVG path or array of points using MotionPathPlugin.\nUse for curved movement paths. For straight-line positional animation\nuse gsap_tween instead.",
       inputSchema: {
         target: z.string().describe("CSS selector for the element to animate"),
         path: z

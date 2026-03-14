@@ -290,8 +290,20 @@ const triggerSchema = z.object({
   trigger: z
     .string()
     .describe("CSS selector for the trigger element"),
-  start: z.string().optional().default("top bottom"),
-  end: z.string().optional().default("bottom top"),
+  start: z
+    .string()
+    .optional()
+    .default("top bottom")
+    .describe(
+      'Scroll start position — format: "triggerEdge viewportEdge", e.g. "top bottom" means trigger\'s top hits viewport\'s bottom'
+    ),
+  end: z
+    .string()
+    .optional()
+    .default("bottom top")
+    .describe(
+      'Scroll end position — format: "triggerEdge viewportEdge", e.g. "bottom top" means trigger\'s bottom hits viewport\'s top'
+    ),
   scrub: z.union([z.boolean(), z.number()]).optional(),
   pin: z.union([z.boolean(), z.string()]).optional(),
   pinSpacing: z.boolean().optional(),
@@ -314,7 +326,7 @@ const triggerSchema = z.object({
     .string()
     .optional()
     .describe(
-      'Four actions: onEnter onLeave onEnterBack onLeaveBack — e.g. "play pause resume reset"'
+      'Four space-separated actions: onEnter onLeave onEnterBack onLeaveBack.\nEach action is one of: play, pause, resume, reverse, restart, reset, complete, none.\nExample: "play pause resume reset"'
     ),
   toggleClass: z.string().optional(),
   once: z.boolean().optional(),
@@ -336,7 +348,7 @@ export function registerScrollTriggerTool(server: McpServer): void {
     {
       title: "GSAP ScrollTrigger",
       description:
-        "Create scroll-based animations with GSAP ScrollTrigger. Supports scrub, pin, snap, and batch.",
+        "Animate elements based on scroll position using ScrollTrigger.\nUse for scroll-driven animations (scrub), pin sections, or trigger-on-scroll effects.\nFor scroll-independent animations use gsap_tween or gsap_timeline instead.",
       inputSchema: {
         animation: animationSchema,
         trigger: triggerSchema,

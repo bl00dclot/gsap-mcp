@@ -219,7 +219,7 @@ export function registerSplitTextTool(server: McpServer): void {
     {
       title: "GSAP SplitText",
       description:
-        "Split text into chars, words, or lines and animate them with stagger effects",
+        "Split text into chars, words, or lines then animate with stagger using SplitText.\nUse when animating individual characters or words. For plain text replacement\nuse gsap_textplugin instead.",
       inputSchema: {
         target: z.string().describe("CSS selector for the text element"),
         type: z
