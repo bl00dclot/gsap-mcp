@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { CodeBuilder } from "../../generators/code-builder.js";
 
 // ── Types ──────────────────────────────────────────────────
 
@@ -50,7 +51,14 @@ export function generateControlsCode(params: ControlsParams): ControlsResult {
       code;
   }
 
-  return { code, warnings };
+  const builder = new CodeBuilder();
+  const header = builder.buildHeaderComment({
+    toolName: "gsap_controls",
+    target: varName,
+    method: params.action,
+  });
+
+  return { code: `${header}\n${code}`, warnings };
 }
 
 // ── Variable name resolution ───────────────────────────────

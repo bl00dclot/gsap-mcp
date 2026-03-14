@@ -101,7 +101,7 @@ describe("includeImports", () => {
 
   it("snippet-only output has no blank line preamble", () => {
     const { code } = generateTweenCode(defaults({ includeImports: false }));
-    expect(code).toMatch(/^gsap\./);
+    expect(code).toMatch(/^\/\/ gsap_tween:/);
   });
 });
 
@@ -314,9 +314,10 @@ describe("output structure", () => {
   it("full build has import separated from code by blank line", () => {
     const { code } = generateTweenCode(defaults());
     const lines = code.split("\n");
-    expect(lines[0]).toBe('import gsap from "gsap";');
-    expect(lines[1]).toBe("");
-    expect(lines[2]).toContain("gsap.to");
+    expect(lines[0]).toMatch(/^\/\/ gsap_tween:/);
+    expect(lines[1]).toBe('import gsap from "gsap";');
+    expect(lines[2]).toBe("");
+    expect(lines[3]).toContain("gsap.to");
   });
 
   it("generates valid-looking JS with semicolons", () => {

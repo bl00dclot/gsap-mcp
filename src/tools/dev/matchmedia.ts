@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { formatGsapVars } from "../../generators/templates.js";
+import { CodeBuilder } from "../../generators/code-builder.js";
 
 // ── Types ──────────────────────────────────────────────────
 
@@ -66,7 +67,16 @@ export function generateMatchMediaCode(
     lines.push("});");
   }
 
-  return { code: lines.join("\n"), warnings };
+  const rawCode = lines.join("\n");
+  const builder = new CodeBuilder();
+  const firstAnim = params.breakpoints[0].animations[0];
+  const header = builder.buildHeaderComment({
+    toolName: "gsap_matchmedia",
+    target: firstAnim?.target ?? "elements",
+    method: firstAnim?.method ?? "to",
+  });
+
+  return { code: `${header}\n${rawCode}`, warnings };
 }
 
 // ── Animation generation ───────────────────────────────────

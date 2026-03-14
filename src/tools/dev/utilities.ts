@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { CodeBuilder } from "../../generators/code-builder.js";
 
 // ── Types ──────────────────────────────────────────────────
 
@@ -38,9 +39,16 @@ export function generateUtilitiesCode(
   const warnings: string[] = [];
 
   const generator = methodGenerators[params.method];
-  const code = generator(params.params, params.example, warnings);
+  const rawCode = generator(params.params, params.example, warnings);
 
-  return { code, warnings };
+  const builder = new CodeBuilder();
+  const header = builder.buildHeaderComment({
+    toolName: "gsap_utilities",
+    target: "values",
+    method: params.method,
+  });
+
+  return { code: `${header}\n${rawCode}`, warnings };
 }
 
 // ── Method generators ──────────────────────────────────────

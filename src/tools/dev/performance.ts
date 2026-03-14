@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { analyzeGsapCode } from "./analyze.js";
+import { CodeBuilder } from "../../generators/code-builder.js";
 
 // ── Types ──────────────────────────────────────────────────
 
@@ -31,9 +32,16 @@ export function generatePerformanceCode(
   const warnings: string[] = [];
 
   const generator = actionGenerators[params.action];
-  const code = generator(params, warnings);
+  const rawCode = generator(params, warnings);
 
-  return { code, warnings };
+  const builder = new CodeBuilder();
+  const header = builder.buildHeaderComment({
+    toolName: "gsap_performance",
+    target: "animation",
+    method: params.action,
+  });
+
+  return { code: `${header}\n${rawCode}`, warnings };
 }
 
 // ── Action generators ──────────────────────────────────────

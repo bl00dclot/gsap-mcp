@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { getLayoutTriggeringProperties } from "../../knowledge/properties.js";
+import { CodeBuilder } from "../../generators/code-builder.js";
 
 // ── Types ──────────────────────────────────────────────────
 
@@ -41,7 +42,13 @@ export function analyzeGsapCode(params: AnalyzeParams): AnalyzeResult {
   }
 
   const score = calculateScore(issues);
-  const summary = buildSummary(issues, score);
+  const builder = new CodeBuilder();
+  const header = builder.buildHeaderComment({
+    toolName: "gsap_analyze",
+    target: "code",
+    method: "audit",
+  });
+  const summary = `${header}\n${buildSummary(issues, score)}`;
 
   return { issues, score, summary };
 }

@@ -237,7 +237,7 @@ describe("includeImports", () => {
     const { code } = generateMorphSVGCode(
       defaults({ includeImports: false })
     );
-    expect(code).not.toContain("import");
+    expect(code).not.toMatch(/^import /m);
     expect(code).not.toContain("registerPlugin");
   });
 });

@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { CodeBuilder } from "../../generators/code-builder.js";
 
 // ── Types ──────────────────────────────────────────────────
 
@@ -34,9 +35,16 @@ export function generateDebugCode(params: DebugParams): DebugResult {
   const target = params.target;
 
   const generator = actionGenerators[params.action];
-  const code = generator(target, params.options ?? {}, warnings);
+  const rawCode = generator(target, params.options ?? {}, warnings);
 
-  return { code, warnings };
+  const builder = new CodeBuilder();
+  const header = builder.buildHeaderComment({
+    toolName: "gsap_debug",
+    target,
+    method: params.action,
+  });
+
+  return { code: `${header}\n${rawCode}`, warnings };
 }
 
 // ── Action generators ──────────────────────────────────────

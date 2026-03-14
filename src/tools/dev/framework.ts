@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { formatGsapVars } from "../../generators/templates.js";
+import { CodeBuilder } from "../../generators/code-builder.js";
 
 // ── Types ──────────────────────────────────────────────────
 
@@ -95,9 +96,16 @@ export function generateFrameworkCode(
   }
 
   const generator = frameworkGenerators[params.framework];
-  const code = generator(type, anim, opts, plugins, warnings);
+  const rawCode = generator(type, anim, opts, plugins, warnings);
 
-  return { code, warnings };
+  const builder = new CodeBuilder();
+  const header = builder.buildHeaderComment({
+    toolName: "gsap_framework_integration",
+    target: anim.target,
+    method: anim.method,
+  });
+
+  return { code: `${header}\n${rawCode}`, warnings };
 }
 
 // ── Framework generators ───────────────────────────────────

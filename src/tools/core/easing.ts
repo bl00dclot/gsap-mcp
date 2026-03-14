@@ -8,6 +8,7 @@ import {
   type EasingEntry,
   type EasingCategory,
 } from "../../knowledge/easings.js";
+import { CodeBuilder } from "../../generators/code-builder.js";
 
 // ── Types ──────────────────────────────────────────────────
 
@@ -25,11 +26,20 @@ export interface EasingResult {
 // ── Core logic ─────────────────────────────────────────────
 
 export function generateEasingReference(params: EasingParams): EasingResult {
+  const builder = new CodeBuilder();
+  const header = builder.buildHeaderComment({
+    toolName: "gsap_easing",
+    target: params.name ?? params.category,
+    method: "reference",
+  });
+
   // Name lookup takes priority
   if (params.name) {
-    return lookupByName(params.name, params.preview);
+    const result = lookupByName(params.name, params.preview);
+    return { text: `${header}\n${result.text}`, found: result.found };
   }
-  return listByCategory(params.category, params.preview);
+  const result = listByCategory(params.category, params.preview);
+  return { text: `${header}\n${result.text}`, found: result.found };
 }
 
 // ── Name lookup ────────────────────────────────────────────

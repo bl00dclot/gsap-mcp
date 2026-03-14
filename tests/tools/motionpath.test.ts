@@ -278,7 +278,7 @@ describe("includeImports", () => {
     const { code } = generateMotionPathCode(
       defaults({ includeImports: false })
     );
-    expect(code).not.toContain("import");
+    expect(code).not.toMatch(/^import /m);
     expect(code).not.toContain("registerPlugin");
   });
 });

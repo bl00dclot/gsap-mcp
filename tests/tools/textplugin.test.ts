@@ -302,7 +302,7 @@ describe("includeImports", () => {
     const { code } = generateTextPluginCode(
       defaults({ includeImports: false })
     );
-    expect(code).not.toContain("import");
+    expect(code).not.toMatch(/^import /m);
     expect(code).not.toContain("registerPlugin");
   });
 
@@ -310,7 +310,7 @@ describe("includeImports", () => {
     const { code } = generateTextPluginCode(
       defaults({ type: "scramble", includeImports: false })
     );
-    expect(code).not.toContain("import");
+    expect(code).not.toMatch(/^import /m);
     expect(code).not.toContain("registerPlugin");
   });
 });

@@ -407,7 +407,7 @@ describe("includeImports", () => {
     const { code } = generateTimelineCode(
       defaults({ includeImports: false })
     );
-    expect(code).toMatch(/^const /);
+    expect(code).toMatch(/^\/\/ gsap_timeline:/);
   });
 });
 
