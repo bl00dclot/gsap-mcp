@@ -21,10 +21,13 @@ import { registerDebugTool } from "./tools/dev/debug.js";
 import { registerPerformanceTool } from "./tools/dev/performance.js";
 import { registerFrameworkTool } from "./tools/dev/framework.js";
 
-const server = new McpServer({
-  name: "gsap-mcp",
-  version: "1.0.0",
-  instructions: `GSAP MCP — Pure Code Generation Server (GSAP v3.12+)
+const server = new McpServer(
+  {
+    name: "gsap-mcp",
+    version: "1.0.0",
+  },
+  {
+    instructions: `GSAP MCP — Pure Code Generation Server (GSAP v3.12+)
 
 This server generates static GSAP animation code. It has no runtime —
 it outputs JavaScript/TypeScript code strings that the developer pastes
@@ -59,7 +62,8 @@ TOOL SELECTION GUIDE:
 - Responsive breakpoint animations → gsap_matchmedia
 - Debug / inspect animations → gsap_debug
 - Performance monitoring → gsap_performance`,
-});
+  },
+);
 
 registerTweenTool(server);
 registerTimelineTool(server);
