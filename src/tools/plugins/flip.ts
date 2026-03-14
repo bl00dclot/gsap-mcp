@@ -66,11 +66,17 @@ export function generateFlipCode(params: FlipParams): FlipResult {
       break;
   }
 
-  const code = params.includeImports
+  const rawCode = params.includeImports
     ? builder.build()
     : builder.buildSnippet();
+  const header = builder.buildHeaderComment({
+    toolName: "gsap_flip",
+    target: params.targets,
+    method: params.action,
+    plugin: "Flip",
+  });
 
-  return { code, warnings };
+  return { code: `${header}\n${rawCode}`, warnings };
 }
 
 // ── Full 3-step pattern ────────────────────────────────────

@@ -80,11 +80,17 @@ export function generateDrawSVGCode(
     generateDirect(builder, params.target, fromVars, toVars);
   }
 
-  const code = params.includeImports
+  const rawCode = params.includeImports
     ? builder.build()
     : builder.buildSnippet();
+  const header = builder.buildHeaderComment({
+    toolName: "gsap_drawsvg",
+    target: params.target,
+    method: "fromTo",
+    plugin: "DrawSVGPlugin",
+  });
 
-  return { code, warnings };
+  return { code: `${header}\n${rawCode}`, warnings };
 }
 
 // ── Direct animation ──────────────────────────────────────

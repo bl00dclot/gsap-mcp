@@ -132,9 +132,14 @@ export function generateTweenCode(params: TweenParams): TweenResult {
     builder.addLine(`gsap.${params.method}("${params.target}", ${varsStr});`);
   }
 
-  const code = params.includeImports ? builder.build() : builder.buildSnippet();
+  const rawCode = params.includeImports ? builder.build() : builder.buildSnippet();
+  const header = builder.buildHeaderComment({
+    toolName: "gsap_tween",
+    target: params.target,
+    method: params.method,
+  });
 
-  return { code, warnings };
+  return { code: `${header}\n${rawCode}`, warnings };
 }
 
 // ── MCP tool registration ──────────────────────────────────
@@ -145,19 +150,31 @@ export function registerTweenTool(server: McpServer): void {
     {
       title: "GSAP Tween Generator",
       description:
-        "Generate GSAP tween animations (to, from, fromTo, set) with full property support",
+        "Generate a single GSAP tween (gsap.to, gsap.from, gsap.fromTo, gsap.set).\nUse for one-off animations on a single target. For sequenced multi-step\nanimations use gsap_timeline instead. For common patterns like fadeIn or\nslideUp use gsap_preset instead.",
       inputSchema: {
         target: z.string().describe("CSS selector or target description"),
-        method: z.enum(["to", "from", "fromTo", "set"]),
+        method: z
+          .enum(["to", "from", "fromTo", "set"])
+          .describe(
+            "'to' animates TO the given values (most common). 'from' animates FROM the given values to current state. 'fromTo' animates between two explicit states. 'set' applies values instantly with no animation."
+          ),
         duration: z.number().optional().default(1),
         properties: z
           .record(z.string(), z.any())
-          .describe("Animation properties (x, y, opacity, scale, etc.)"),
+          .describe(
+            "GSAP animation properties. Use transform shorthands (x, y, scale, rotation) not CSS transform. Use autoAlpha instead of opacity+visibility. Values can be numbers, strings ('+=100', '50%'), or arrays for keyframes."
+          ),
         fromProperties: z
           .record(z.string(), z.any())
           .optional()
           .describe("Starting properties — required for fromTo method"),
-        ease: z.string().optional().default("power1.out"),
+        ease: z
+          .string()
+          .optional()
+          .default("power1.out")
+          .describe(
+            "Easing function name, e.g. 'power2.out', 'elastic.inOut', 'back.out(1.7)'. Use gsap_easing tool to browse available easings."
+          ),
         stagger: staggerSchema.optional(),
         delay: z.number().optional(),
         repeat: z.number().optional(),
@@ -167,7 +184,13 @@ export function registerTweenTool(server: McpServer): void {
           .string()
           .optional()
           .describe("Function name to call on complete"),
-        includeImports: z.boolean().optional().default(true),
+        includeImports: z
+          .boolean()
+          .optional()
+          .default(true)
+          .describe(
+            "Set to false when generating a snippet to insert into existing code that already has GSAP imported."
+          ),
       },
     },
     async (args) => {

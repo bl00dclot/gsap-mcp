@@ -273,9 +273,14 @@ export function generatePresetCode(params: PresetParams): PresetResult {
     generateStandardPreset(builder, preset, target, duration, ease, delay, distance, stagger);
   }
 
-  const code = params.includeImports ? builder.build() : builder.buildSnippet();
+  const rawCode = params.includeImports ? builder.build() : builder.buildSnippet();
+  const header = builder.buildHeaderComment({
+    toolName: "gsap_preset",
+    target: params.target,
+    method: preset.method,
+  });
 
-  return { code, warnings, pluginsRequired };
+  return { code: `${header}\n${rawCode}`, warnings, pluginsRequired };
 }
 
 // ── Standard preset generation ─────────────────────────────
@@ -399,7 +404,7 @@ export function registerPresetTool(server: McpServer): void {
     {
       title: "GSAP Animation Presets",
       description:
-        "Get ready-to-use GSAP animation code for common patterns like fadeIn, slideUp, staggerReveal, etc.",
+        "Generate ready-to-use code for common animation patterns (fadeIn, slideUp,\nbounceIn, staggerReveal, parallax, etc.). Use when the animation matches a\nstandard pattern. For custom animations with specific properties use gsap_tween\ninstead.",
       inputSchema: {
         type: z.enum(PRESET_TYPES),
         target: z.string().optional().default(".element"),

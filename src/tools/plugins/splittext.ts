@@ -98,11 +98,17 @@ export function generateSplitTextCode(
     generateDirectAnimation(builder, params, effectiveMethod, splitTarget);
   }
 
-  const code = params.includeImports
+  const rawCode = params.includeImports
     ? builder.build()
     : builder.buildSnippet();
+  const header = builder.buildHeaderComment({
+    toolName: "gsap_splittext",
+    target: params.target,
+    method: params.animation.method,
+    plugin: "SplitText",
+  });
 
-  return { code, warnings };
+  return { code: `${header}\n${rawCode}`, warnings };
 }
 
 // ── SplitText constructor ──────────────────────────────────

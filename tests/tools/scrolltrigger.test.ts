@@ -581,3 +581,19 @@ describe("ease", () => {
     expect(code).toContain('"none"');
   });
 });
+
+// ── Header comment ─────────────────────────────────────────
+
+describe("header comment", () => {
+  it("prepends ScrollTrigger plugin header comment", () => {
+    const { code } = generateScrollTriggerCode(defaults());
+    expect(code).toMatch(
+      /^\/\/ Animates .element with ScrollTrigger \(requires: import \{ ScrollTrigger \} from "gsap\/ScrollTrigger"\)/
+    );
+  });
+
+  it("no header comment on error (empty code)", () => {
+    const { code } = generateScrollTriggerCode(defaults({ mode: "batch" }));
+    expect(code).toBe("");
+  });
+});

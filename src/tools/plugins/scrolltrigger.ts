@@ -117,11 +117,17 @@ export function generateScrollTriggerCode(
       break;
   }
 
-  const code = params.includeImports
+  const rawCode = params.includeImports
     ? builder.build()
     : builder.buildSnippet();
+  const header = builder.buildHeaderComment({
+    toolName: "gsap_scrolltrigger",
+    target: params.animation.target,
+    method: params.animation.method,
+    plugin: "ScrollTrigger",
+  });
 
-  return { code, warnings };
+  return { code: `${header}\n${rawCode}`, warnings };
 }
 
 // ── Standalone mode ────────────────────────────────────────

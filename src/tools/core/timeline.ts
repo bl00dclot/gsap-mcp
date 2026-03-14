@@ -102,9 +102,14 @@ export function generateTimelineCode(params: TimelineParams): TimelineResult {
     builder.addLine(line);
   }
 
-  const code = params.includeImports ? builder.build() : builder.buildSnippet();
+  const rawCode = params.includeImports ? builder.build() : builder.buildSnippet();
+  const header = builder.buildHeaderComment({
+    toolName: "gsap_timeline",
+    target: params.animations[0].target,
+    method: params.animations[0].method,
+  });
 
-  return { code, warnings };
+  return { code: `${header}\n${rawCode}`, warnings };
 }
 
 // ── Helpers ────────────────────────────────────────────────
@@ -282,7 +287,7 @@ export function registerTimelineTool(server: McpServer): void {
     {
       title: "GSAP Timeline Creator",
       description:
-        "Build complex GSAP animation timelines with multiple tweens, labels, and callbacks",
+        "Build a GSAP timeline with multiple sequenced or overlapping tweens,\nlabels, and position parameters. Use when you need 2+ animations coordinated\ntogether. For a single animation use gsap_tween instead.",
       inputSchema: {
         animations: z.array(animationSchema),
         settings: settingsSchema,

@@ -72,11 +72,17 @@ export function generateMotionPathCode(
   const varsStr = formatGsapVars(vars);
   builder.addLine(`gsap.to("${params.target}", ${varsStr});`);
 
-  const code = params.includeImports
+  const rawCode = params.includeImports
     ? builder.build()
     : builder.buildSnippet();
+  const header = builder.buildHeaderComment({
+    toolName: "gsap_motionpath",
+    target: params.target,
+    method: "to",
+    plugin: "MotionPathPlugin",
+  });
 
-  return { code, warnings };
+  return { code: `${header}\n${rawCode}`, warnings };
 }
 
 // ── Build motionPath config ────────────────────────────────

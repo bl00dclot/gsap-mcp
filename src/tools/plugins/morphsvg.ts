@@ -80,11 +80,17 @@ export function generateMorphSVGCode(
     generateDirect(builder, params.target, vars);
   }
 
-  const code = params.includeImports
+  const rawCode = params.includeImports
     ? builder.build()
     : builder.buildSnippet();
+  const header = builder.buildHeaderComment({
+    toolName: "gsap_morphsvg",
+    target: params.target,
+    method: "to",
+    plugin: "MorphSVGPlugin",
+  });
 
-  return { code, warnings };
+  return { code: `${header}\n${rawCode}`, warnings };
 }
 
 // ── Build morphSVG config ──────────────────────────────────

@@ -139,7 +139,7 @@ export function registerEasingTool(server: McpServer): void {
     {
       title: "GSAP Easing Reference",
       description:
-        "Browse and preview GSAP easing functions. Get code examples and visual descriptions.",
+        "Look up GSAP easing functions by name or category. Returns descriptions,\nparameters, and preview code. Use this to explore available easings — not to\ngenerate animations (use gsap_tween or gsap_timeline for that).",
       inputSchema: {
         category: z
           .enum(["all", "standard", "special", "custom"])

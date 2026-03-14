@@ -348,3 +348,22 @@ describe("output structure", () => {
     expect(code).toContain("scale: 1.2");
   });
 });
+
+// ── Header comment ─────────────────────────────────────────
+
+describe("header comment", () => {
+  it("prepends a header comment to tween output", () => {
+    const { code } = generateTweenCode(defaults());
+    expect(code).toMatch(/^\/\/ gsap_tween: Animates .box TO/);
+  });
+
+  it("header comment reflects method", () => {
+    const { code } = generateTweenCode(defaults({ method: "from" }));
+    expect(code).toMatch(/^\/\/ gsap_tween: Animates .box FROM/);
+  });
+
+  it("no header comment on error (empty code)", () => {
+    const { code } = generateTweenCode(defaults({ method: "fromTo" }));
+    expect(code).toBe("");
+  });
+});
