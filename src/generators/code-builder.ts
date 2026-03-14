@@ -85,6 +85,22 @@ export class CodeBuilder {
     return this;
   }
 
+  // ── Header comment ──────────────────────────────────────
+
+  buildHeaderComment(params: {
+    toolName: string;
+    target: string;
+    method: string;
+    plugin?: string;
+  }): string {
+    const { toolName, target, method, plugin } = params;
+    const upperMethod = method.toUpperCase();
+    if (plugin) {
+      return `// Animates ${target} with ${plugin} (requires: import { ${plugin} } from "gsap/${plugin}")`;
+    }
+    return `// ${toolName}: Animates ${target} ${upperMethod}`;
+  }
+
   // ── Output ───────────────────────────────────────────────
 
   build(): string {

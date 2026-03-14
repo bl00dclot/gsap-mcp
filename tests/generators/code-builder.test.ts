@@ -179,6 +179,70 @@ describe("CodeBuilder", () => {
     });
   });
 
+  // ── Header comment ──────────────────────────────────────
+
+  describe("buildHeaderComment", () => {
+    it("returns a comment for a basic to tween", () => {
+      const result = builder.buildHeaderComment({
+        toolName: "gsap_tween",
+        target: ".box",
+        method: "to",
+      });
+      expect(result).toBe("// gsap_tween: Animates .box TO");
+    });
+
+    it("returns a comment for a fromTo tween", () => {
+      const result = builder.buildHeaderComment({
+        toolName: "gsap_tween",
+        target: ".hero",
+        method: "fromTo",
+      });
+      expect(result).toBe("// gsap_tween: Animates .hero FROMTO");
+    });
+
+    it("returns a comment for a from tween", () => {
+      const result = builder.buildHeaderComment({
+        toolName: "gsap_tween",
+        target: "#header",
+        method: "from",
+      });
+      expect(result).toBe("// gsap_tween: Animates #header FROM");
+    });
+
+    it("includes plugin import hint when plugin is provided", () => {
+      const result = builder.buildHeaderComment({
+        toolName: "gsap_scrolltrigger",
+        target: ".section",
+        method: "to",
+        plugin: "ScrollTrigger",
+      });
+      expect(result).toBe(
+        '// Animates .section with ScrollTrigger (requires: import { ScrollTrigger } from "gsap/ScrollTrigger")'
+      );
+    });
+
+    it("includes plugin import hint for MorphSVG plugin", () => {
+      const result = builder.buildHeaderComment({
+        toolName: "gsap_morphsvg",
+        target: "#circle",
+        method: "to",
+        plugin: "MorphSVGPlugin",
+      });
+      expect(result).toBe(
+        '// Animates #circle with MorphSVGPlugin (requires: import { MorphSVGPlugin } from "gsap/MorphSVGPlugin")'
+      );
+    });
+
+    it("handles minimal params without plugin", () => {
+      const result = builder.buildHeaderComment({
+        toolName: "gsap_tween",
+        target: "div",
+        method: "set",
+      });
+      expect(result).toBe("// gsap_tween: Animates div SET");
+    });
+  });
+
   // ── Chaining ─────────────────────────────────────────────
 
   describe("method chaining", () => {
