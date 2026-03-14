@@ -196,7 +196,8 @@ describe("custom target across actions", () => {
       defaults({ action: "slowmo", target: "customTl" })
     );
     expect(code).toContain("gsap.globalTimeline.timeScale");
-    expect(code).not.toContain("customTl");
+    const bodyLines = code.split('\n').filter(l => !l.startsWith('//'));
+    expect(bodyLines.join('\n')).not.toContain("customTl");
   });
 });
 

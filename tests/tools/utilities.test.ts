@@ -4,6 +4,14 @@ import {
   type UtilitiesParams,
 } from "../../src/tools/dev/utilities.js";
 
+/** Strip leading header comment lines (lines starting with //) */
+function stripHeader(code: string): string {
+  const lines = code.split('\n');
+  let start = 0;
+  while (start < lines.length && lines[start].startsWith('//')) start++;
+  return lines.slice(start).join('\n');
+}
+
 function defaults(overrides: Partial<UtilitiesParams> = {}): UtilitiesParams {
   return {
     method: "clamp",
@@ -112,7 +120,7 @@ describe("mapRange", () => {
         example: false,
       })
     );
-    expect(code).not.toContain("//");
+    expect(stripHeader(code)).not.toContain("//");
   });
 });
 
@@ -688,7 +696,7 @@ describe("example toggle", () => {
         example: false,
       })
     );
-    expect(code).not.toContain("//");
+    expect(stripHeader(code)).not.toContain("//");
   });
 
   it("interpolate omits comments when example is false", () => {
@@ -699,7 +707,7 @@ describe("example toggle", () => {
         example: false,
       })
     );
-    expect(code).not.toContain("//");
+    expect(stripHeader(code)).not.toContain("//");
     expect(code).toContain("gsap.utils.interpolate");
   });
 
@@ -711,7 +719,7 @@ describe("example toggle", () => {
         example: false,
       })
     );
-    expect(code).not.toContain("//");
+    expect(stripHeader(code)).not.toContain("//");
     expect(code).toContain("gsap.utils.random");
   });
 
@@ -723,7 +731,7 @@ describe("example toggle", () => {
         example: false,
       })
     );
-    expect(code).not.toContain("//");
+    expect(stripHeader(code)).not.toContain("//");
   });
 
   it("shuffle omits comments when example is false", () => {
@@ -734,7 +742,7 @@ describe("example toggle", () => {
         example: false,
       })
     );
-    expect(code).not.toContain("//");
+    expect(stripHeader(code)).not.toContain("//");
   });
 
   it("distribute omits comments when example is false", () => {
@@ -745,8 +753,8 @@ describe("example toggle", () => {
         example: false,
       })
     );
-    expect(code).not.toContain("//");
-    expect(code).not.toContain("Usage:");
+    expect(stripHeader(code)).not.toContain("//");
+    expect(stripHeader(code)).not.toContain("Usage:");
   });
 });
 

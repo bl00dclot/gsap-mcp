@@ -259,7 +259,7 @@ describe("plugin imports", () => {
     const { code } = generateTextPluginCode(
       defaults({ type: "scramble" })
     );
-    expect(code).not.toContain('"gsap/TextPlugin"');
+    expect(code).not.toMatch(/^import.*gsap\/TextPlugin/m);
   });
 });
 

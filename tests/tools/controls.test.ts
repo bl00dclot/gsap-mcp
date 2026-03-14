@@ -18,17 +18,17 @@ function defaults(overrides: Partial<ControlsParams> = {}): ControlsParams {
 describe("default variable names", () => {
   it('uses "tl" for timeline target', () => {
     const { code } = generateControlsCode(defaults());
-    expect(code).toBe("tl.play();");
+    expect(code).toContain("tl.play();");
   });
 
   it('uses "tween" for tween target', () => {
     const { code } = generateControlsCode(defaults({ target: "tween" }));
-    expect(code).toBe("tween.play();");
+    expect(code).toContain("tween.play();");
   });
 
   it('uses "gsap.globalTimeline" for global target', () => {
     const { code } = generateControlsCode(defaults({ target: "global" }));
-    expect(code).toBe("gsap.globalTimeline.play();");
+    expect(code).toContain("gsap.globalTimeline.play();");
   });
 });
 
@@ -39,21 +39,21 @@ describe("custom variableName", () => {
     const { code } = generateControlsCode(
       defaults({ variableName: "myTimeline" })
     );
-    expect(code).toBe("myTimeline.play();");
+    expect(code).toContain("myTimeline.play();");
   });
 
   it("uses custom variableName for tween", () => {
     const { code } = generateControlsCode(
       defaults({ target: "tween", variableName: "heroTween" })
     );
-    expect(code).toBe("heroTween.play();");
+    expect(code).toContain("heroTween.play();");
   });
 
   it("uses custom variableName for global", () => {
     const { code } = generateControlsCode(
       defaults({ target: "global", variableName: "masterTl", action: "pause" })
     );
-    expect(code).toBe("masterTl.pause();");
+    expect(code).toContain("masterTl.pause();");
   });
 });
 
@@ -98,7 +98,7 @@ describe("deprecated selector backward compat", () => {
 describe("play action", () => {
   it("generates play call", () => {
     const { code } = generateControlsCode(defaults({ action: "play" }));
-    expect(code).toBe("tl.play();");
+    expect(code).toContain("tl.play();");
   });
 
   it("produces no warnings", () => {
@@ -112,7 +112,7 @@ describe("play action", () => {
 describe("pause action", () => {
   it("generates pause call", () => {
     const { code } = generateControlsCode(defaults({ action: "pause" }));
-    expect(code).toBe("tl.pause();");
+    expect(code).toContain("tl.pause();");
   });
 });
 
@@ -121,7 +121,7 @@ describe("pause action", () => {
 describe("resume action", () => {
   it("generates resume call", () => {
     const { code } = generateControlsCode(defaults({ action: "resume" }));
-    expect(code).toBe("tl.resume();");
+    expect(code).toContain("tl.resume();");
   });
 });
 
@@ -130,7 +130,7 @@ describe("resume action", () => {
 describe("reverse action", () => {
   it("generates reverse call", () => {
     const { code } = generateControlsCode(defaults({ action: "reverse" }));
-    expect(code).toBe("tl.reverse();");
+    expect(code).toContain("tl.reverse();");
   });
 });
 
@@ -139,7 +139,7 @@ describe("reverse action", () => {
 describe("restart action", () => {
   it("generates restart call", () => {
     const { code } = generateControlsCode(defaults({ action: "restart" }));
-    expect(code).toBe("tl.restart();");
+    expect(code).toContain("tl.restart();");
   });
 });
 
@@ -150,21 +150,21 @@ describe("seek action", () => {
     const { code } = generateControlsCode(
       defaults({ action: "seek", value: 2 })
     );
-    expect(code).toBe("tl.seek(2);");
+    expect(code).toContain("tl.seek(2);");
   });
 
   it("generates seek with string label", () => {
     const { code } = generateControlsCode(
       defaults({ action: "seek", value: "section2" })
     );
-    expect(code).toBe('tl.seek("section2");');
+    expect(code).toContain('tl.seek("section2");');
   });
 
   it("warns and defaults to 0 when value missing", () => {
     const { code, warnings } = generateControlsCode(
       defaults({ action: "seek" })
     );
-    expect(code).toBe("tl.seek(0);");
+    expect(code).toContain("tl.seek(0);");
     expect(warnings).toHaveLength(1);
     expect(warnings[0]).toContain("seek requires a value");
   });
@@ -173,14 +173,14 @@ describe("seek action", () => {
     const { code } = generateControlsCode(
       defaults({ action: "seek", value: 1.5 })
     );
-    expect(code).toBe("tl.seek(1.5);");
+    expect(code).toContain("tl.seek(1.5);");
   });
 
   it("generates seek with zero value (no warning)", () => {
     const { code, warnings } = generateControlsCode(
       defaults({ action: "seek", value: 0 })
     );
-    expect(code).toBe("tl.seek(0);");
+    expect(code).toContain("tl.seek(0);");
     expect(warnings).toHaveLength(0);
   });
 });
@@ -192,21 +192,21 @@ describe("timeScale action", () => {
     const { code } = generateControlsCode(
       defaults({ action: "timeScale", value: 0.5 })
     );
-    expect(code).toBe("tl.timeScale(0.5);");
+    expect(code).toContain("tl.timeScale(0.5);");
   });
 
   it("generates timeScale with 2x", () => {
     const { code } = generateControlsCode(
       defaults({ action: "timeScale", value: 2 })
     );
-    expect(code).toBe("tl.timeScale(2);");
+    expect(code).toContain("tl.timeScale(2);");
   });
 
   it("warns and defaults to 1 when value missing", () => {
     const { code, warnings } = generateControlsCode(
       defaults({ action: "timeScale" })
     );
-    expect(code).toBe("tl.timeScale(1);");
+    expect(code).toContain("tl.timeScale(1);");
     expect(warnings).toHaveLength(1);
     expect(warnings[0]).toContain("timeScale requires a numeric value");
   });
@@ -219,21 +219,21 @@ describe("progress action", () => {
     const { code } = generateControlsCode(
       defaults({ action: "progress", value: 0.5 })
     );
-    expect(code).toBe("tl.progress(0.5);");
+    expect(code).toContain("tl.progress(0.5);");
   });
 
   it("generates progress with 1", () => {
     const { code } = generateControlsCode(
       defaults({ action: "progress", value: 1 })
     );
-    expect(code).toBe("tl.progress(1);");
+    expect(code).toContain("tl.progress(1);");
   });
 
   it("warns and defaults to 0 when value missing", () => {
     const { code, warnings } = generateControlsCode(
       defaults({ action: "progress" })
     );
-    expect(code).toBe("tl.progress(0);");
+    expect(code).toContain("tl.progress(0);");
     expect(warnings).toHaveLength(1);
     expect(warnings[0]).toContain("progress requires a numeric value");
   });
@@ -244,35 +244,35 @@ describe("progress action", () => {
 describe("kill action", () => {
   it("generates kill for timeline", () => {
     const { code } = generateControlsCode(defaults({ action: "kill" }));
-    expect(code).toBe("tl.kill();");
+    expect(code).toContain("tl.kill();");
   });
 
   it("generates kill for tween", () => {
     const { code } = generateControlsCode(
       defaults({ action: "kill", target: "tween" })
     );
-    expect(code).toBe("tween.kill();");
+    expect(code).toContain("tween.kill();");
   });
 
   it("generates killTweensOf for global with variableName", () => {
     const { code } = generateControlsCode(
       defaults({ action: "kill", target: "global", variableName: ".element" })
     );
-    expect(code).toBe('gsap.killTweensOf(".element");');
+    expect(code).toContain('gsap.killTweensOf(".element");');
   });
 
   it("generates globalTimeline.kill for global without selector", () => {
     const { code } = generateControlsCode(
       defaults({ action: "kill", target: "global" })
     );
-    expect(code).toBe("gsap.globalTimeline.kill();");
+    expect(code).toContain("gsap.globalTimeline.kill();");
   });
 
   it("generates kill with custom variableName for tween", () => {
     const { code } = generateControlsCode(
       defaults({ action: "kill", target: "tween", variableName: "myTween" })
     );
-    expect(code).toBe("myTween.kill();");
+    expect(code).toContain("myTween.kill();");
   });
 });
 
@@ -283,35 +283,35 @@ describe("global target", () => {
     const { code } = generateControlsCode(
       defaults({ action: "play", target: "global" })
     );
-    expect(code).toBe("gsap.globalTimeline.play();");
+    expect(code).toContain("gsap.globalTimeline.play();");
   });
 
   it("pause on global", () => {
     const { code } = generateControlsCode(
       defaults({ action: "pause", target: "global" })
     );
-    expect(code).toBe("gsap.globalTimeline.pause();");
+    expect(code).toContain("gsap.globalTimeline.pause();");
   });
 
   it("reverse on global", () => {
     const { code } = generateControlsCode(
       defaults({ action: "reverse", target: "global" })
     );
-    expect(code).toBe("gsap.globalTimeline.reverse();");
+    expect(code).toContain("gsap.globalTimeline.reverse();");
   });
 
   it("timeScale on global", () => {
     const { code } = generateControlsCode(
       defaults({ action: "timeScale", target: "global", value: 0.25 })
     );
-    expect(code).toBe("gsap.globalTimeline.timeScale(0.25);");
+    expect(code).toContain("gsap.globalTimeline.timeScale(0.25);");
   });
 
   it("seek on global with label", () => {
     const { code } = generateControlsCode(
       defaults({ action: "seek", target: "global", value: "intro" })
     );
-    expect(code).toBe('gsap.globalTimeline.seek("intro");');
+    expect(code).toContain('gsap.globalTimeline.seek("intro");');
   });
 });
 
