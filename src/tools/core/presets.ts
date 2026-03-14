@@ -219,6 +219,7 @@ export interface PresetOptions {
   stagger?: number;
   delay?: number;
   distance?: number;
+  text?: string;
 }
 
 export interface PresetParams {
@@ -267,7 +268,7 @@ export function generatePresetCode(params: PresetParams): PresetResult {
 
   // Handle custom presets
   if (preset.custom) {
-    generateCustomPreset(builder, params.type, target, duration, ease, delay, pluginsRequired);
+    generateCustomPreset(builder, params.type, target, duration, ease, delay, pluginsRequired, params.options?.text);
   } else {
     generateStandardPreset(builder, preset, target, duration, ease, delay, distance, stagger);
   }
@@ -347,12 +348,13 @@ function generateCustomPreset(
   ease: string,
   delay: number | undefined,
   _plugins: string[],
+  text: string | undefined,
 ): void {
   switch (type) {
     case "typewriter": {
       const vars: Record<string, unknown> = {
         duration,
-        text: "Your text here",
+        text: text ?? "Your text here",
         ease,
       };
       if (delay !== undefined) vars.delay = delay;
@@ -408,6 +410,7 @@ export function registerPresetTool(server: McpServer): void {
             stagger: z.number().optional(),
             delay: z.number().optional(),
             distance: z.number().optional(),
+            text: z.string().optional().describe("Text content for typewriter preset"),
           })
           .optional(),
         includeImports: z.boolean().optional().default(true),

@@ -263,6 +263,13 @@ describe("typewriter (TextPlugin)", () => {
     const { code } = generatePresetCode(defaults({ type: "typewriter" }));
     expect(code).toContain('"none"');
   });
+
+  it("uses custom text from options.text", () => {
+    const { code } = generatePresetCode(
+      defaults({ type: "typewriter", options: { text: "Hello World" } })
+    );
+    expect(code).toContain('"Hello World"');
+  });
 });
 
 describe("counter", () => {
