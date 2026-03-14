@@ -32,28 +32,64 @@ describe("default variable names", () => {
   });
 });
 
-// ── Custom selector ──────────────────────────────────────
+// ── Custom variableName ──────────────────────────────────
 
-describe("custom selector", () => {
-  it("uses custom selector for timeline", () => {
+describe("custom variableName", () => {
+  it("uses custom variableName for timeline", () => {
     const { code } = generateControlsCode(
-      defaults({ selector: "myTimeline" })
+      defaults({ variableName: "myTimeline" })
     );
     expect(code).toBe("myTimeline.play();");
   });
 
-  it("uses custom selector for tween", () => {
+  it("uses custom variableName for tween", () => {
     const { code } = generateControlsCode(
-      defaults({ target: "tween", selector: "heroTween" })
+      defaults({ target: "tween", variableName: "heroTween" })
     );
     expect(code).toBe("heroTween.play();");
   });
 
-  it("uses custom selector for global", () => {
+  it("uses custom variableName for global", () => {
     const { code } = generateControlsCode(
-      defaults({ target: "global", selector: "masterTl", action: "pause" })
+      defaults({ target: "global", variableName: "masterTl", action: "pause" })
     );
     expect(code).toBe("masterTl.pause();");
+  });
+});
+
+// ── Backward compat: deprecated selector key ─────────────
+
+describe("deprecated selector backward compat", () => {
+  it("uses selector value as variable name when variableName not provided", () => {
+    const { code } = generateControlsCode(
+      defaults({ selector: "legacyTl" })
+    );
+    expect(code).toContain("legacyTl.play();");
+  });
+
+  it("includes deprecation comment when selector is used", () => {
+    const { code } = generateControlsCode(
+      defaults({ selector: "legacyTl" })
+    );
+    expect(code).toContain(
+      '// DEPRECATED: parameter "selector" has been renamed to "variableName"'
+    );
+  });
+
+  it("variableName takes precedence over selector when both provided", () => {
+    const { code } = generateControlsCode(
+      defaults({ variableName: "newTl", selector: "oldTl" })
+    );
+    expect(code).toContain("newTl.play();");
+    expect(code).not.toContain("oldTl");
+    expect(code).not.toContain("DEPRECATED");
+  });
+
+  it("no deprecation comment when only variableName is used", () => {
+    const { code } = generateControlsCode(
+      defaults({ variableName: "myTl" })
+    );
+    expect(code).not.toContain("DEPRECATED");
   });
 });
 
@@ -218,9 +254,9 @@ describe("kill action", () => {
     expect(code).toBe("tween.kill();");
   });
 
-  it("generates killTweensOf for global with selector", () => {
+  it("generates killTweensOf for global with variableName", () => {
     const { code } = generateControlsCode(
-      defaults({ action: "kill", target: "global", selector: ".element" })
+      defaults({ action: "kill", target: "global", variableName: ".element" })
     );
     expect(code).toBe('gsap.killTweensOf(".element");');
   });
@@ -232,9 +268,9 @@ describe("kill action", () => {
     expect(code).toBe("gsap.globalTimeline.kill();");
   });
 
-  it("generates kill with custom selector for tween", () => {
+  it("generates kill with custom variableName for tween", () => {
     const { code } = generateControlsCode(
-      defaults({ action: "kill", target: "tween", selector: "myTween" })
+      defaults({ action: "kill", target: "tween", variableName: "myTween" })
     );
     expect(code).toBe("myTween.kill();");
   });
@@ -330,7 +366,7 @@ describe("generateUI", () => {
 
   it("uses resolved variable name in onclick handlers", () => {
     const { code } = generateControlsCode(
-      defaults({ generateUI: true, selector: "masterTl" })
+      defaults({ generateUI: true, variableName: "masterTl" })
     );
     expect(code).toContain('onclick="masterTl.play()"');
     expect(code).toContain('onclick="masterTl.pause()"');
@@ -388,11 +424,11 @@ describe("no warnings for simple actions", () => {
 // ── Combined: action + custom selector + UI ──────────────
 
 describe("combined params", () => {
-  it("seek with custom selector and UI", () => {
+  it("seek with custom variableName and UI", () => {
     const { code, warnings } = generateControlsCode(
       defaults({
         action: "seek",
-        selector: "heroTl",
+        variableName: "heroTl",
         value: 3,
         generateUI: true,
       })

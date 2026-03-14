@@ -19,6 +19,8 @@ export type ControlsTarget = "tween" | "timeline" | "global";
 export interface ControlsParams {
   action: ControlsAction;
   target: ControlsTarget;
+  variableName?: string;
+  /** @deprecated Use variableName instead */
   selector?: string;
   value?: number | string;
   generateUI: boolean;
@@ -42,12 +44,19 @@ export function generateControlsCode(params: ControlsParams): ControlsResult {
     code += "\n\n" + generateUIPanel(varName);
   }
 
+  if (params.selector !== undefined && params.variableName === undefined) {
+    code =
+      `// DEPRECATED: parameter "selector" has been renamed to "variableName"\n` +
+      code;
+  }
+
   return { code, warnings };
 }
 
 // ── Variable name resolution ───────────────────────────────
 
 function resolveVarName(params: ControlsParams): string {
+  if (params.variableName) return params.variableName;
   if (params.selector) return params.selector;
 
   switch (params.target) {
@@ -149,8 +158,9 @@ function generateKill(
   varName: string,
   warnings: string[]
 ): string {
-  if (params.target === "global" && params.selector) {
-    return `gsap.killTweensOf("${params.selector}");`;
+  const killTarget = params.variableName ?? params.selector;
+  if (params.target === "global" && killTarget) {
+    return `gsap.killTweensOf("${killTarget}");`;
   }
 
   return `${varName}.kill();`;
@@ -202,12 +212,19 @@ export function registerControlsTool(server: McpServer): void {
           .optional()
           .default("timeline")
           .describe("Target type: tween, timeline, or global"),
+        variableName: z
+          .string()
+          .optional()
+          .describe(
+            "JavaScript variable name of the tween or timeline to control, e.g. tl, heroAnimation. NOT a CSS selector."
+          ),
         selector: z
           .string()
           .optional()
           .describe(
-            'Variable name (default "tl" for timeline, "tween" for tween, "gsap.globalTimeline" for global)'
-          ),
+            'Deprecated: use variableName instead. Accepted for backward compatibility.'
+          )
+          .transform((val) => val),
         value: z
           .union([z.number(), z.string()])
           .optional()
@@ -222,7 +239,9 @@ export function registerControlsTool(server: McpServer): void {
       },
     },
     async (args) => {
-      const result = generateControlsCode(args as ControlsParams);
+      const result = generateControlsCode(
+        args as unknown as ControlsParams
+      );
 
       const content: { type: "text"; text: string }[] = [
         { type: "text", text: result.code },
