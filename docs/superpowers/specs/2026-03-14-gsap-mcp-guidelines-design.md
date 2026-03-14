@@ -59,7 +59,16 @@ TOOL SELECTION GUIDE:
 - Cleanup wrapper for frameworks → gsap_context
 - Reusable custom effect → gsap_effect
 - React/Vue/Svelte/Angular integration → gsap_framework_integration
+- Text content swap / typewriter effect → gsap_textplugin
 - Analyze existing GSAP code → gsap_analyze
+- SVG shape morphing → gsap_morphsvg
+- SVG stroke drawing → gsap_drawsvg
+- Animate along a path → gsap_motionpath
+- Playback controls (play/pause/seek) → gsap_controls
+- GSAP utility methods (clamp, wrap, snap, etc.) → gsap_utilities
+- Responsive breakpoint animations → gsap_matchmedia
+- Debug / inspect animations → gsap_debug
+- Performance monitoring → gsap_performance
 ```
 
 **Implementation:** Add `instructions` property to the McpServer constructor options object in `src/index.ts`.
@@ -224,7 +233,7 @@ Add `.describe()` to every parameter that currently lacks one. Key improvements:
 - `includeImports`: `.describe("Set to false when generating a snippet to insert into existing code that already has GSAP imported.")`
 
 #### gsap_controls
-- Rename `selector` to `variableName`: `.describe("JavaScript variable name of the tween or timeline to control, e.g. 'tl', 'heroAnimation'. NOT a CSS selector.")`
+- Rename `selector` to `variableName`: `.describe("JavaScript variable name of the tween or timeline to control, e.g. 'tl', 'heroAnimation'. NOT a CSS selector.")` (see Section 6.4 for backward compatibility details)
 
 #### gsap_utilities
 - `params`: Replace the generic description with method-specific guidance (see description rewrite above)
@@ -265,6 +274,8 @@ Add `.describe()` to every parameter that currently lacks one. Key improvements:
   }
 }
 ```
+
+**Limitation:** This tool generates individual tweens inside the context. For timelines inside a context, use `gsap_timeline` to generate the timeline code and manually wrap it in a `gsap.context()` call, or use `gsap_framework_integration` which handles this automatically.
 
 **Output example:**
 ```javascript
@@ -394,19 +405,55 @@ export function useAnimation() {
 }
 ```
 
-Also update Svelte output to include `gsap.context()` cleanup pattern in the `onMount` return.
+Also update Svelte output to use `gsap.context()` for cleanup:
+
+**Current Svelte action output:**
+```svelte
+<script>
+  import gsap from "gsap";
+
+  function animate(node) {
+    gsap.to(node, { x: 100, duration: 1, ease: "power2.out" });
+    return {
+      destroy() { gsap.killTweensOf(node); }
+    };
+  }
+</script>
+<div use:animate>Content</div>
+```
+
+**New Svelte action output:**
+```svelte
+<script>
+  import gsap from "gsap";
+
+  function animate(node) {
+    const ctx = gsap.context(() => {
+      gsap.to(node, { x: 100, duration: 1, ease: "power2.out" });
+    }, node);
+    return {
+      destroy() { ctx.revert(); }
+    };
+  }
+</script>
+<div use:animate>Content</div>
+```
+
+The `onMount` component variant should similarly wrap animations in `gsap.context()` and call `ctx.revert()` in the returned cleanup function.
 
 ---
 
 ### 6. Bug Fixes
 
-#### 6.1 onComplete callback string-quoting
+#### 6.1 Callback values treated as strings instead of raw JS expressions
 
-**File:** `src/generators/code-builder.ts` (the `formatGsapVars` function)
+**File:** `src/generators/templates.ts` (the `formatValue` function, ~line 20)
 
-**Problem:** `onComplete: "myCallback"` is generated instead of `onComplete: myCallback`. Callback properties should not be quoted.
+**Problem:** The `formatValue` function quotes all string values. When a callback property like `onComplete` receives a string input (e.g., `"myCallback"`), it gets double-quoted to `onComplete: "myCallback"` — a string literal instead of a function reference. The same issue affects `onUpdate` in the counter preset (`src/tools/core/presets.ts` ~line 369).
 
-**Fix:** Add a list of known callback property names (`onComplete`, `onStart`, `onUpdate`, `onRepeat`, `onReverseComplete`) and skip quoting for those values.
+**Root cause:** `formatValue` has no way to distinguish between string values that should be quoted (CSS values, easing names) and string values that represent raw JS expressions (callback function names, inline arrow functions).
+
+**Fix:** In `formatValue` (or a wrapper used by `formatGsapVars`), maintain a set of known callback property names (`onComplete`, `onStart`, `onUpdate`, `onRepeat`, `onReverseComplete`) and emit their values as raw JS expressions (unquoted). This means the caller must pass valid JS identifiers or expressions as callback values.
 
 #### 6.2 ScrollTrigger standalone mode drops duration
 
@@ -422,7 +469,10 @@ Also update Svelte output to include `gsap.context()` cleanup pattern in the `on
 
 **Problem:** The typewriter preset always outputs `"Your text here"` regardless of input.
 
-**Fix:** Accept a `text` option in the preset options and use it in the output. Fall back to `"Your text here"` only if no text is provided.
+**Fix:**
+1. Add `text?: string` to the `PresetOptions` interface (~line 216-222)
+2. Add `text: z.string().optional().describe("Text content for typewriter preset")` to the Zod schema for the tool's `options` property (~line 404-410)
+3. In `generateCustomPreset`, use `options.text ?? "Your text here"` instead of the hardcoded string
 
 #### 6.4 Controls `selector` parameter misnamed
 
@@ -430,7 +480,7 @@ Also update Svelte output to include `gsap.context()` cleanup pattern in the `on
 
 **Problem:** Parameter named `selector` but it takes a JavaScript variable name (e.g., `"tl"`), not a CSS selector.
 
-**Fix:** Rename parameter to `variableName` in the schema and update the description. Keep backward compatibility by accepting either name internally.
+**Fix:** Rename the Zod schema key from `selector` to `variableName`. For backward compatibility, add a Zod `.transform()` that accepts the old `selector` key and maps it to `variableName` if present, so existing callers don't break. Log a deprecation notice in the output comment when the old name is used.
 
 ---
 
@@ -454,12 +504,15 @@ Add:
 
 ### 8. Response-Level Guidance
 
-Each tool's output should include a brief comment block explaining what the generated code does and any next steps. This helps the AI (and the developer) understand the output.
+Each tool handler should prepend a 1-2 line comment to its generated code string, summarizing what the animation does and any prerequisites.
 
-**Example for gsap_tween:**
+**Implementation:** Add a `buildHeaderComment(params)` method to the `CodeBuilder` class in `src/generators/code-builder.ts`. Each tool handler calls this before assembling its output string. The method takes the tool name, target, and method and returns a comment string.
+
+**Files affected:** `src/generators/code-builder.ts` (add method), then each tool handler file prepends the comment to its output string.
+
+**Example output for gsap_tween:**
 ```javascript
-// Animates .box TO x:100 and opacity:0 over 1s with power1.out easing.
-// Requires: npm install gsap
+// Animates .box TO x:100 and opacity:0 over 1s with power1.out easing
 import gsap from "gsap";
 
 gsap.to(".box", {
@@ -470,7 +523,7 @@ gsap.to(".box", {
 });
 ```
 
-Keep comments to 1-2 lines max. Only add them to the code output, not as separate text content.
+Keep comments to 1-2 lines max. Only add them to the code output, not as separate text content. Plugin tools should mention the required plugin import in the comment (e.g., "Requires: ScrollTrigger plugin").
 
 ---
 
@@ -478,7 +531,7 @@ Keep comments to 1-2 lines max. Only add them to the code output, not as separat
 
 | File | Change Type | Description |
 |------|-------------|-------------|
-| `src/index.ts` | Modify | Add `instructions` to McpServer, register 3 new tools |
+| `src/index.ts` | Modify | Add `instructions` to McpServer, import and call `registerContextTool`, `registerQuickToTool`, `registerEffectTool` |
 | `src/tools/core/tween.ts` | Modify | Rewrite description, enrich param describes |
 | `src/tools/core/timeline.ts` | Modify | Rewrite description, enrich param describes |
 | `src/tools/core/easing.ts` | Modify | Rewrite description |
@@ -500,12 +553,18 @@ Keep comments to 1-2 lines max. Only add them to the code output, not as separat
 | `src/tools/core/context.ts` | **New** | gsap_context tool |
 | `src/tools/core/quickto.ts` | **New** | gsap_quickto tool |
 | `src/tools/core/effect.ts` | **New** | gsap_effect tool |
-| `src/generators/code-builder.ts` | Modify | Fix callback string-quoting bug |
+| `src/generators/templates.ts` | Modify | Fix callback string-quoting bug in `formatValue` |
+| `src/generators/code-builder.ts` | Modify | Add `buildHeaderComment` method for response-level guidance |
 | `src/knowledge/properties.ts` | Modify | Add autoAlpha, relative values |
 | `src/knowledge/best-practices.ts` | Modify | Add modern patterns |
 | `tests/tools/context.test.ts` | **New** | Tests for gsap_context |
 | `tests/tools/quickto.test.ts` | **New** | Tests for gsap_quickto |
 | `tests/tools/effect.test.ts` | **New** | Tests for gsap_effect |
-| Existing test files | Modify | Update for description/param changes, add bug regression tests |
+| `tests/tools/tween.test.ts` | Modify | Add regression test for callback quoting bug |
+| `tests/tools/scrolltrigger.test.ts` | Modify | Add regression test for standalone duration bug |
+| `tests/tools/presets.test.ts` | Modify | Add regression test for typewriter text, update description assertions |
+| `tests/tools/controls.test.ts` | Modify | Update for variableName rename |
+| `tests/tools/framework.test.ts` | Modify | Update React assertions for useGSAP output |
+| `tests/generators/templates.test.ts` | Modify | Add tests for callback raw expression passthrough |
 
-**Total: 21 modified files, 6 new files**
+**Total: 25 modified files, 6 new files**
