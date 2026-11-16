@@ -1,0 +1,154 @@
+# Ralph Progress Log
+# Branch: ralph/gsap-mcp-guidelines-improvements
+# Started: 2026-03-14
+
+## 2026-03-14 - US-001: Add server-level instructions to McpServer constructor
+- Status: FAILED
+- Failed criteria: Typecheck passes — TypeScript error: `instructions` does not exist in `Implementation` (first arg). The field belongs in `ServerOptions` (second arg).
+- Suggestions: In src/index.ts, move `instructions` from the first argument object to a second argument object:
+  ```ts
+  const server = new McpServer(
+    { name: "gsap-mcp", version: "1.0.0" },
+    { instructions: `...` }
+  );
+  ```
+  The McpServer constructor signature is: `constructor(serverInfo: Implementation, options?: ServerOptions)`.
+  `instructions` is a property of `ServerOptions`, not `Implementation`.
+---
+
+## 2026-03-14 - US-001: Add server-level instructions to McpServer constructor
+- Status: PASSED
+- Verified:
+  - McpServer constructor in src/index.ts includes 'instructions' in second arg (ServerOptions) at lines 29-65 ✓
+  - Instructions include all NEVER/ALWAYS rules: v2 syntax, named plugin imports, registerPlugin(), duration in TO vars, autoAlpha, gsap.context() ✓
+  - Instructions include complete TOOL SELECTION GUIDE mapping 18 animation tasks to tool names ✓
+  - Typecheck passes: `pnpm exec tsc --noEmit` exit 0 ✓
+  - Tests pass: 893 tests across 23 test files, all green ✓
+---
+
+## 2026-03-14 - US-002: Fix callback string-quoting bug in formatValue
+- Status: PASSED
+- Verified:
+  - CALLBACK_KEYS Set in src/generators/templates.ts contains all 5 names: onComplete, onStart, onUpdate, onRepeat, onReverseComplete ✓
+  - formatValue returns raw value (unquoted) when key is in CALLBACK_KEYS ✓
+  - Non-callback string values remain quoted (e.g. ease: "power2.out") ✓
+  - Regression tests in tests/generators/templates.test.ts cover all 5 callback keys and non-callback quoting ✓
+  - Typecheck passes: `pnpm exec tsc --noEmit` exit 0 ✓
+  - Tests pass: 895 tests across 23 test files, all green ✓
+---
+
+## 2026-03-14 - US-003: Fix ScrollTrigger standalone mode dropping duration
+- Status: PASSED
+- Verified:
+  - src/tools/plugins/scrolltrigger.ts lines 154-159: allVars object includes `duration: animation.duration` in non-fromTo standalone branch ✓
+  - Regression test in tests/tools/scrolltrigger.test.ts line 67: "includes duration in standalone non-fromTo mode" verifies `expect(code).toContain("duration: 1")` ✓
+  - Typecheck passes: `pnpm exec tsc --noEmit` exit 0 ✓
+  - Tests pass: 896 tests across 23 test files, all green ✓
+---
+
+## 2026-03-14 - US-004: Fix typewriter preset hardcoded text
+- Status: PASSED
+- Verified:
+  - PresetOptions interface in src/tools/core/presets.ts (line 222) has optional `text?: string` field ✓
+  - Zod schema options object (line 413) includes `text: z.string().optional().describe("Text content for typewriter preset")` ✓
+  - generateCustomPreset (line 356) uses `text: text ?? "Your text here"` instead of hardcoded string ✓
+  - Regression test in tests/tools/presets.test.ts (line 267-272): "uses custom text from options.text" verifies custom text "Hello World" appears in typewriter output ✓
+  - Typecheck passes: `pnpm exec tsc --noEmit` exit 0 ✓
+  - Tests pass: 897 tests across 23 test files, all green ✓
+---
+
+## 2026-03-14 - US-005: Fix controls selector parameter misnamed to variableName
+- Status: PASSED
+- Verified:
+  - Zod schema key `variableName` present in inputSchema (controls.ts:215)
+  - describe text matches exactly: "JavaScript variable name of the tween or timeline to control, e.g. tl, heroAnimation. NOT a CSS selector." (controls.ts:218-220)
+  - Backward compat: deprecated `selector` field present with .transform(); resolveVarName() falls back to params.selector when params.variableName undefined (controls.ts:59-61)
+  - Deprecation comment prepended when selector used without variableName (controls.ts:47-51)
+  - tests/tools/controls.test.ts updated: uses variableName throughout, includes dedicated "deprecated selector backward compat" describe block
+  - Typecheck: exit code 0 (no errors)
+  - Tests: 55/55 passed
+---
+
+## 2026-03-14 - US-006: Add buildHeaderComment method to CodeBuilder
+- Status: PASSED
+- Verified:
+  - CodeBuilder class in src/generators/code-builder.ts has buildHeaderComment(params) method at line 90
+  - Method accepts toolName, target, method, and optional plugin params
+  - Without plugin: returns "// {toolName}: Animates {target} {METHOD}" (method uppercased)
+  - With plugin: returns "// Animates {target} with {plugin} (requires: import { {plugin} } from "gsap/{plugin}")"
+  - Comments are single-line (1-2 lines max criterion met)
+  - Tests in tests/generators/code-builder.test.ts: 6 test cases under "buildHeaderComment" describe block
+  - Typecheck: tsc --noEmit exits 0 (clean)
+  - Tests: 37 passed (all code-builder tests including 6 new buildHeaderComment tests)
+---
+
+## 2026-03-14 - US-007: Rewrite core tool descriptions and enrich parameters (tween, timeline, easing, preset)
+- Status: PASSED
+- Verified:
+  - gsap_tween description in tween.ts:147-148: one-line summary + "Use for..." + "For sequenced...use gsap_timeline instead. For common patterns...use gsap_preset instead." ✓
+  - gsap_tween params enriched: method.describe() ✓, properties.describe() ✓, ease.describe() ✓, includeImports.describe() ✓
+  - gsap_timeline description in timeline.ts:284-285: one-line summary + "Use when you need 2+ animations coordinated together. For a single animation use gsap_tween instead." ✓
+  - gsap_easing description in easing.ts:141-142: one-line summary + "Use this to explore...not to generate animations (use gsap_tween or gsap_timeline for that)." ✓
+  - gsap_preset description in presets.ts:401-402: one-line summary + "Use when the animation matches a standard pattern. For custom animations...use gsap_tween instead." ✓
+  - Typecheck: tsc --noEmit exits 0 ✓
+  - Tests: 907 passed across 23 test files ✓
+---
+
+## 2026-03-14 - US-008: Rewrite plugin tool descriptions and enrich parameters
+- Status: PASSED
+- Verified:
+  - gsap_scrolltrigger description rewritten: scroll-driven/pin/trigger-on-scroll use cases, disambiguates from gsap_tween/gsap_timeline ✓
+  - gsap_scrolltrigger start/end/toggleActions params have .describe() with format docs ✓
+  - gsap_splittext description rewritten: "For plain text replacement use gsap_textplugin instead" ✓
+  - gsap_flip description rewritten: capture-change-animate, disambiguates from gsap_tween ✓
+  - gsap_flip action param has .default("full") and .describe() explaining all action values ✓
+  - gsap_morphsvg description rewritten: "For drawing SVG strokes use gsap_drawsvg instead" ✓
+  - gsap_drawsvg description rewritten: "For morphing between shapes use gsap_morphsvg instead" ✓
+  - gsap_motionpath description rewritten: "For straight-line positional animation use gsap_tween instead" ✓
+  - gsap_textplugin description rewritten: "For animating split characters use gsap_splittext instead" ✓
+  - Typecheck: tsc --noEmit exits 0 ✓
+  - Tests: 907 passed across 23 test files ✓
+---
+
+## 2026-03-14 - US-009: Rewrite dev tool descriptions and enrich utility params
+- Status: PASSED
+- Verified:
+  - gsap_analyze description rewritten: audit mode, detects layout-triggering props/v2 syntax/registerPlugin/stagger/a11y, disambiguates from gsap_tween ✓
+  - gsap_controls description rewritten: "existing tween or timeline variable", variableName not CSS selector, disambiguates from gsap_tween/gsap_timeline ✓
+  - gsap_utilities description rewritten: math/range/DOM helpers, not for animation generation, per-method param guidance covers all 14 methods ✓
+  - gsap_matchmedia description rewritten: breakpoint/media-query use case, CSS media query string format, auto-revert behavior ✓
+  - gsap_debug description rewritten: 5 modes explained, Club GSAP note, dev-only warning ✓
+  - gsap_performance description rewritten: 3 modes (monitor/optimize/profile) with param requirements ✓
+  - gsap_framework_integration description rewritten: all 4 frameworks with cleanup lifecycle details ✓
+  - Typecheck: tsc --noEmit exits 0 ✓
+  - Tests: 907 passed across 23 test files ✓
+---
+
+## 2026-03-14 - US-010: Integrate header comments into tool handlers
+- Status: FAILED
+- Failed criteria:
+  1. "Each tool handler file calls buildHeaderComment()" — 8 files missing: easing.ts, analyze.ts, controls.ts, debug.ts, framework.ts, matchmedia.ts, performance.ts, utilities.ts
+  2. "Tests pass" — 12 tests failed across 9 files (typecheck passes, tsc exits 0)
+- Test failure root causes:
+  A. Plugin header comments include "requires: import { Plugin } from ..." so `not.toContain('import')` tests for `includeImports: false` fail. Affected: drawsvg, flip, morphsvg, motionpath, scrolltrigger, splittext, textplugin
+  B. tween/timeline output structure tests check lines[0] expecting the import statement, but lines[0] is now the header comment. e.g. `expect(lines[0]).toBe('import gsap from "gsap";')` fails.
+- Suggestions for next write phase:
+  1. Add buildHeaderComment() to 8 missing files. For non-animation tools (dev/), use generic comments like `// gsap_analyze: Analyzes animation code for issues`
+  2. Fix plugin `includeImports: false` tests: use `not.toMatch(/^import /m)` instead of `not.toContain('import')`. Affected test files: drawsvg, flip, morphsvg, motionpath, scrolltrigger, splittext, textplugin
+  3. Fix tween/timeline output structure tests: header comment is now lines[0], shift line index expectations by 1 (or skip header when checking structure). Affected: tests/tools/tween.test.ts (~lines 103, 317-319), tests/tools/timeline.test.ts
+- Codebase patterns: Header comment always prepended regardless of includeImports. Plugin header comment includes word "import" in the doc string — tests must use regex `/^import /m` not string contains.
+---
+
+## 2026-03-14 - US-010: Integrate header comments into tool handlers (2nd attempt)
+- Status: FAILED
+- Typecheck: PASSES (tsc --noEmit exits 0)
+- Tests: 41 FAILED across 4 files (871 passed, 912 total)
+- Failed criteria: "Tests pass"
+- All other criteria appear implemented (header comments added to tool handlers)
+- Remaining test failures:
+  1. tests/tools/controls.test.ts (37 failures): Many tests use `expect(code).toBe("tl.play();")` — these exact string assertions break because the header comment is now prepended. Fix: change `toBe(...)` to `toContain(...)` for all single-line action assertions. Affected lines: 21, 26, 31, 42, 49, 56, 101, 115, 124, 133, 142, 153, 160, 167, 176, 183, 195, 202, 209, 222, 229, 236, 247, 254, 261, 268, 275, 286, 293, 300, 307, 314 (and similar).
+  2. tests/tools/debug.test.ts:199 (1 failure): `expect(code).not.toContain("customTl")` — the header `// gsap_debug: Animates customTl SLOWMO` now includes the variable name even for slowmo which ignores the target param. Fix: update the assertion to check only the code lines below the header, e.g. `const codeWithoutHeader = code.split('\n').slice(1).join('\n'); expect(codeWithoutHeader).not.toContain("customTl");` OR skip the not.toContain and just assert `expect(code).toContain("gsap.globalTimeline.timeScale")`.
+  3. tests/tools/textplugin.test.ts:262 (1 failure): `expect(code).not.toContain('"gsap/TextPlugin"')` — the plugin header `// Animates .text with TextPlugin (requires: import { TextPlugin } from "gsap/TextPlugin")` contains the string `"gsap/TextPlugin"`. Fix: change to `not.toMatch(/^import.*gsap\/TextPlugin/m)` to only check actual import lines.
+  4. tests/tools/utilities.test.ts (7 failures): `expect(code).not.toContain("//")` at lines 115, 691, 702, 714, 726, 737, 748. The header comment `// gsap_utilities: ...` always contains `//`. Fix: change to check code lines after stripping first line: `const codeWithoutHeader = code.split('\n').slice(1).join('\n'); expect(codeWithoutHeader).not.toContain("//");`
+- Codebase patterns: Header comment ALWAYS prepended regardless of any flags (includeImports, example, etc). Header uses variable name even when tool ignores it at runtime. Tests must account for the header line at position 0.
+---

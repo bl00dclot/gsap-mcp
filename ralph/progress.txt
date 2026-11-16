@@ -1,0 +1,3 @@
+# Ralph Progress Log
+# Branch: ralph/gsap-mcp-guidelines-improvements
+# Started: 2026-03-14

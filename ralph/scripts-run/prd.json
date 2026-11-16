@@ -1,0 +1,278 @@
+{
+  "project": "gsap-mcp",
+  "branchName": "ralph/gsap-mcp-guidelines-improvements",
+  "description": "Improve GSAP MCP server with better tool descriptions, parameter enrichment, new tools, bug fixes, and knowledge base updates so AI models produce optimal GSAP code",
+  "userStories": [
+    {
+      "id": "US-001",
+      "title": "Add server-level instructions to McpServer constructor",
+      "description": "As an AI model consumer, I want the MCP server to provide global instructions during initialize so that I know the rules and tool selection guide upfront.",
+      "acceptanceCriteria": [
+        "McpServer constructor in src/index.ts includes an 'instructions' field with the full instructions text from the design spec (GSAP v3.12+ rules, tool selection guide)",
+        "Instructions include NEVER/ALWAYS rules for v2 syntax, imports, registerPlugin, duration placement, autoAlpha, gsap.context",
+        "Instructions include the complete TOOL SELECTION GUIDE mapping animation tasks to tool names",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 1,
+      "passes": true,
+      "notes": "This is the instructions field in the McpServer constructor options. See design spec Section 1 for the exact text."
+    },
+    {
+      "id": "US-002",
+      "title": "Fix callback string-quoting bug in formatValue",
+      "description": "As a developer, I want callback properties like onComplete to emit raw JS expressions instead of quoted strings so generated code is valid.",
+      "acceptanceCriteria": [
+        "formatValue in src/generators/templates.ts recognizes callback property names: onComplete, onStart, onUpdate, onRepeat, onReverseComplete",
+        "Callback values are emitted as raw JS expressions (unquoted) in generated code",
+        "Non-callback string values (CSS values, easing names) remain properly quoted",
+        "Add regression tests in tests/generators/templates.test.ts for callback raw expression passthrough",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 2,
+      "passes": true,
+      "notes": "Bug fix in src/generators/templates.ts formatValue function. Also check onUpdate in counter preset at src/tools/core/presets.ts ~line 369."
+    },
+    {
+      "id": "US-003",
+      "title": "Fix ScrollTrigger standalone mode dropping duration",
+      "description": "As a developer, I want ScrollTrigger standalone non-fromTo mode to include the duration property so animations have correct timing.",
+      "acceptanceCriteria": [
+        "In src/tools/plugins/scrolltrigger.ts ~line 154-159, the reconstructed vars object includes duration from animation params",
+        "Add regression test in tests/tools/scrolltrigger.test.ts verifying duration is present in standalone mode output",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 3,
+      "passes": true,
+      "notes": "Bug fix in src/tools/plugins/scrolltrigger.ts."
+    },
+    {
+      "id": "US-004",
+      "title": "Fix typewriter preset hardcoded text",
+      "description": "As a developer, I want the typewriter preset to use my provided text instead of always outputting 'Your text here'.",
+      "acceptanceCriteria": [
+        "PresetOptions interface in src/tools/core/presets.ts has optional 'text' field with type string",
+        "Zod schema for the tool's options property includes text: z.string().optional().describe('Text content for typewriter preset')",
+        "generateCustomPreset uses options.text ?? 'Your text here' instead of hardcoded string",
+        "Add regression test in tests/tools/presets.test.ts verifying custom text appears in typewriter output",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 4,
+      "passes": true,
+      "notes": "Bug fix in src/tools/core/presets.ts ~lines 216-222 (interface), ~404-410 (schema), ~353-359 (generation)."
+    },
+    {
+      "id": "US-005",
+      "title": "Fix controls selector parameter misnamed to variableName",
+      "description": "As an AI model, I want the controls parameter to be named variableName so I know it expects a JS variable name, not a CSS selector.",
+      "acceptanceCriteria": [
+        "Zod schema key in src/tools/dev/controls.ts renamed from 'selector' to 'variableName'",
+        "variableName has describe: 'JavaScript variable name of the tween or timeline to control, e.g. tl, heroAnimation. NOT a CSS selector.'",
+        "Backward compatibility: Zod .transform() accepts old 'selector' key and maps to variableName",
+        "When old 'selector' name is used, output includes a deprecation comment",
+        "Update tests/tools/controls.test.ts for the variableName rename",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 5,
+      "passes": true,
+      "notes": "Rename in src/tools/dev/controls.ts. Must maintain backward compatibility via .transform()."
+    },
+    {
+      "id": "US-006",
+      "title": "Add buildHeaderComment method to CodeBuilder",
+      "description": "As a developer, I want generated code to include a 1-2 line header comment summarizing the animation so I understand the output at a glance.",
+      "acceptanceCriteria": [
+        "CodeBuilder class in src/generators/code-builder.ts has a buildHeaderComment(params) method",
+        "Method takes tool name, target, and method and returns a comment string like '// Animates .box TO x:100 and opacity:0 over 1s with power1.out easing'",
+        "Plugin tools mention the required plugin import in the comment",
+        "Comments are 1-2 lines max",
+        "Add tests in tests/generators/code-builder.test.ts for the new method",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 6,
+      "passes": true,
+      "notes": "New method on existing class in src/generators/code-builder.ts. Tool handlers will call this in later stories."
+    },
+    {
+      "id": "US-007",
+      "title": "Rewrite core tool descriptions and enrich parameters (tween, timeline, easing, preset)",
+      "description": "As an AI model, I want clear tool descriptions with when-to-use and when-NOT-to-use guidance so I pick the right tool.",
+      "acceptanceCriteria": [
+        "gsap_tween description in src/tools/core/tween.ts rewritten per spec: one-line summary, when to use, when NOT to use",
+        "gsap_tween params enriched: method, properties, ease, includeImports all have .describe() per spec",
+        "gsap_timeline description in src/tools/core/timeline.ts rewritten per spec",
+        "gsap_easing description in src/tools/core/easing.ts rewritten per spec",
+        "gsap_preset description in src/tools/core/presets.ts rewritten per spec",
+        "Existing tests still pass (update description assertions if tests match on description text)",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 7,
+      "passes": true,
+      "notes": "See design spec Section 2.1 for exact new descriptions and Section 3 for parameter describes."
+    },
+    {
+      "id": "US-008",
+      "title": "Rewrite plugin tool descriptions and enrich parameters",
+      "description": "As an AI model, I want plugin tool descriptions to explain formats and disambiguate from similar tools.",
+      "acceptanceCriteria": [
+        "gsap_scrolltrigger description rewritten per spec, start/end/toggleActions params enriched with .describe()",
+        "gsap_splittext description rewritten per spec",
+        "gsap_flip description rewritten per spec, action param gets default 'full' and enriched .describe()",
+        "gsap_morphsvg description rewritten per spec",
+        "gsap_drawsvg description rewritten per spec",
+        "gsap_motionpath description rewritten per spec",
+        "gsap_textplugin description rewritten per spec",
+        "Existing tests still pass (update description assertions if needed)",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 8,
+      "passes": true,
+      "notes": "See design spec Sections 2.2 and 3 for exact descriptions and param enrichments."
+    },
+    {
+      "id": "US-009",
+      "title": "Rewrite dev tool descriptions and enrich utility params",
+      "description": "As an AI model, I want dev tool descriptions to clearly explain modes and param formats.",
+      "acceptanceCriteria": [
+        "gsap_analyze description rewritten per spec",
+        "gsap_controls description rewritten per spec",
+        "gsap_utilities description rewritten per spec with per-method param guidance",
+        "gsap_matchmedia description rewritten per spec",
+        "gsap_debug description rewritten per spec",
+        "gsap_performance description rewritten per spec",
+        "gsap_framework_integration description rewritten per spec",
+        "Existing tests still pass",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 9,
+      "passes": true,
+      "notes": "See design spec Sections 2.3 and 3."
+    },
+    {
+      "id": "US-010",
+      "title": "Integrate header comments into tool handlers",
+      "description": "As a developer, I want each tool's generated code to start with a summary comment using the buildHeaderComment method.",
+      "acceptanceCriteria": [
+        "Each tool handler file calls CodeBuilder.buildHeaderComment() and prepends the result to its output",
+        "gsap_tween output starts with a comment like '// Animates .box TO x:100...'",
+        "Plugin tool comments mention the required plugin (e.g. '// Requires: ScrollTrigger plugin')",
+        "Comments are 1-2 lines max in all tool outputs",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 10,
+      "passes": false,
+      "notes": "Depends on US-006 (buildHeaderComment). Touches every tool handler file. Update test assertions for output that now includes header comments."
+    },
+    {
+      "id": "US-011",
+      "title": "Create gsap_context tool",
+      "description": "As a developer, I want a gsap_context tool to generate gsap.context() wrappers for scoped animation cleanup in component frameworks.",
+      "acceptanceCriteria": [
+        "New file src/tools/core/context.ts with gsap_context tool",
+        "Schema matches design spec: scope, animations array, includeCleanup, includeImports",
+        "Output generates gsap.context() wrapper with animations inside, scope param, and ctx.revert() cleanup",
+        "Tool registered in src/index.ts",
+        "New test file tests/tools/context.test.ts with tests for basic output, scope, cleanup, imports",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 11,
+      "passes": false,
+      "notes": "New tool. See design spec Section 4.1 for schema and output example."
+    },
+    {
+      "id": "US-012",
+      "title": "Create gsap_quickto tool",
+      "description": "As a developer, I want a gsap_quickto tool to generate optimized quickTo code for cursor followers and high-frequency updates.",
+      "acceptanceCriteria": [
+        "New file src/tools/core/quickto.ts with gsap_quickto tool",
+        "Schema matches design spec: target, properties array, duration, ease, event enum, includeImports",
+        "mousemove event generates quickTo functions with window.addEventListener",
+        "scroll event generates scroll-linked quickTo code",
+        "custom event generates just the quickTo functions without event binding",
+        "Tool registered in src/index.ts",
+        "New test file tests/tools/quickto.test.ts with tests for each event type",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 12,
+      "passes": false,
+      "notes": "New tool. See design spec Section 4.2 for schema and output example."
+    },
+    {
+      "id": "US-013",
+      "title": "Create gsap_effect tool",
+      "description": "As a developer, I want a gsap_effect tool to generate reusable gsap.registerEffect() code.",
+      "acceptanceCriteria": [
+        "New file src/tools/core/effect.ts with gsap_effect tool",
+        "Schema matches design spec: name, method, properties, fromProperties, defaults, extendTimeline, includeImports",
+        "Output generates gsap.registerEffect() with effect function, defaults, and extendTimeline",
+        "Output includes usage comments showing gsap.effects.<name>() and tl.<name>() patterns",
+        "Tool registered in src/index.ts",
+        "New test file tests/tools/effect.test.ts with tests for basic output, defaults, extendTimeline",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 13,
+      "passes": false,
+      "notes": "New tool. See design spec Section 4.3 for schema and output example."
+    },
+    {
+      "id": "US-014",
+      "title": "Update React framework integration to useGSAP hook",
+      "description": "As a React developer, I want gsap_framework_integration to generate the modern useGSAP hook pattern instead of raw useLayoutEffect.",
+      "acceptanceCriteria": [
+        "React output in src/tools/dev/framework.ts uses useGSAP from @gsap/react instead of useLayoutEffect + gsap.context",
+        "Import includes: import { useGSAP } from '@gsap/react'",
+        "useLayoutEffect is no longer imported for React output",
+        "useGSAP callback receives { scope: container } options object",
+        "Update tests/tools/framework.test.ts: React assertions check for useGSAP pattern",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 14,
+      "passes": false,
+      "notes": "See design spec Section 5 for before/after React output."
+    },
+    {
+      "id": "US-015",
+      "title": "Update Svelte framework integration to use gsap.context()",
+      "description": "As a Svelte developer, I want gsap_framework_integration to generate gsap.context() for proper cleanup instead of gsap.killTweensOf.",
+      "acceptanceCriteria": [
+        "Svelte action output in src/tools/dev/framework.ts wraps animations in gsap.context()",
+        "destroy() calls ctx.revert() instead of gsap.killTweensOf(node)",
+        "Svelte onMount variant also wraps in gsap.context() with ctx.revert() in cleanup",
+        "Update tests/tools/framework.test.ts: Svelte assertions check for gsap.context pattern",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 15,
+      "passes": false,
+      "notes": "See design spec Section 5 for before/after Svelte output."
+    },
+    {
+      "id": "US-016",
+      "title": "Update knowledge base: properties and best practices",
+      "description": "As an AI model, I want the knowledge base to include autoAlpha, relative values, and modern best practices so generated code follows current patterns.",
+      "acceptanceCriteria": [
+        "src/knowledge/properties.ts includes autoAlpha entry: 'Combines opacity and visibility. When value hits 0, sets visibility: hidden so element is non-interactive. Preferred over opacity alone.'",
+        "Property descriptions mention relative value support: values can be strings like '+=100', '-=50', '*=2'",
+        "src/knowledge/best-practices.ts includes: gsap.context() in component frameworks, useGSAP for React, gsap.quickTo() for high-frequency updates, gsap.registerPlugin() requirement",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 16,
+      "passes": false,
+      "notes": "See design spec Section 7 for exact entries."
+    }
+  ]
+}
